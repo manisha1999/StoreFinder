@@ -1,0 +1,1005 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "description": "Morrisons Location v2 API",
+    "version": "1.0.0",
+    "title": "Morrisons Location v2 API",
+    "contact": {
+      "email": "ayaz.khan1@wipro.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dev-api.morrisons.com",
+      "description": "DEV"
+    },
+    {
+      "url": "https://cit-api.morrisons.com",
+      "description": "CIT"
+    },
+    {
+      "url": "https://sit-api.morrisons.com",
+      "description": "SIT"
+    },
+    {
+      "url": "https://uat-api.morrisons.com",
+      "description": "UAT"
+    },
+    {
+      "url": "https://pre-api.morrisons.com",
+      "description": "PRE-PROD"
+    },
+    {
+      "url": "https://api.morrisons.com",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Stores",
+      "description": "Get details of all stores."
+    },
+    {
+      "name": "Store",
+      "description": "Get details of a particular store."
+    },
+    {
+      "name": "Opening time",
+      "description": "Get opening times of a store."
+    },
+    {
+      "name": "Special opening time",
+      "description": "Get special opening times of a store."
+    }
+  ],
+  "paths": {
+    "/location/v2/stores": {
+      "get": {
+        "summary": "Get stores",
+        "description": "Get stores. This resource can only be used for geo search.",
+        "tags": ["Stores"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of stores to return.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "distance",
+            "in": "query",
+            "description": "Limit the GEO Search to locations within this distance (in metres) from lat,lon. Use this parameter along with 'lat' and 'lon'.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude for centre of search. Use this parameter along with 'distance' and 'lon'.",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitude for centre of search. Use this parameter along with 'distance' and 'lat'.",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "The type of service you want to filter your search by.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeformat",
+            "in": "query",
+            "description": "The type of store to be returned.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storename[contains]",
+            "in": "query",
+            "description": "Get stores matching the store name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllStoresResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "stores": [
+                        {
+                          "name": 2,
+                          "storeName": "Bradford - Mayo Avenue",
+                          "storeFormat": "supermarket",
+                          "category": "Supermarket",
+                          "region": "Yorkshire",
+                          "address": {
+                            "addressLine1": "110 Mayo Avenue",
+                            "addressLine2": "",
+                            "county": "West Yorkshire",
+                            "city": "Bradford",
+                            "postcode": "BD5 8HP",
+                            "country": "United Kingdom"
+                          },
+                          "telephone": "01274 727676",
+                          "location": {
+                            "latitude": 53.7704010009766,
+                            "longitude": -1.75777995586395
+                          },
+                          "satnav": {
+                            "latitude": 53.7704010009766,
+                            "longitude": -1.75777995586395
+                          },
+                          "openingTimes": {
+                            "mon": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "tue": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "wed": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "thu": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "fri": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "sat": {
+                              "open": "07:00:00",
+                              "close": "22:00:00"
+                            },
+                            "sun": {
+                              "open": "10:00:00",
+                              "close": "16:00:00"
+                            }
+                          },
+                          "distance": 1663
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "httpResponseCode": 500,
+                      "errorCode": "500.12.001",
+                      "errorMessage": "Internal Server Error",
+                      "errorMoreInfo": "http://developer.morrisons.com/docs/errors"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Apikey": []
+          }
+        ]
+      }
+    },
+    "/location/v2/stores/{storeId}": {
+      "get": {
+        "summary": "Store details",
+        "description": "Get the details of a store",
+        "tags": ["Store"],
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "description": "Store identifier",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Comma separated list. Valid values are: departments,services,linkedStores",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAStoreResponse"
+                },
+                "example": {
+                  "name": 8,
+                  "storeName": "Bradford - Thornbury",
+                  "storeFormat": "supermarket",
+                  "category": "Supermarket",
+                  "region": "Yorkshire",
+                  "address": {
+                    "addressLine1": "Rushton Avenue",
+                    "addressLine2": "Thornbury",
+                    "county": "West Yorkshire",
+                    "city": "Bradford",
+                    "postcode": "BD3 7HZ",
+                    "country": "United Kingdom"
+                  },
+                  "telephone": "01274 661429",
+                  "location": {
+                    "latitude": 53.8013801574707,
+                    "longitude": -1.7104799747467
+                  },
+                  "satnav": {
+                    "latitude": 53.8013801574707,
+                    "longitude": -1.7104799747467
+                  },
+                  "openingTimes": {
+                    "mon": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "tue": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "wed": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "thu": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "fri": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "sat": {
+                      "open": "07:00:00",
+                      "close": "22:00:00"
+                    },
+                    "sun": {
+                      "open": "10:00:00",
+                      "close": "16:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "httpResponseCode": 500,
+                      "errorCode": "500.12.001",
+                      "errorMessage": "Internal Server Error",
+                      "errorMoreInfo": "http://developer.morrisons.com/docs/errors"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Apikey": []
+          }
+        ]
+      }
+    },
+    "/location/v2/stores/{storeId}/openingtimes": {
+      "get": {
+        "summary": "Store opening time",
+        "description": "Get opening times of a store, its linked stores and its departments",
+        "tags": ["Opening time"],
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "description": "Store identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOpeningTimesOfAStoreResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": [
+                      {
+                        "name": "supermarket",
+                        "mon": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "tue": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "wed": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "thu": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "fri": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "sat": {
+                          "open": "07:00:00",
+                          "close": "22:00:00"
+                        },
+                        "sun": {
+                          "open": "10:00:00",
+                          "close": "16:00:00"
+                        }
+                      },
+                      {
+                        "name": "cafe",
+                        "mon": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "tue": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "wed": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "thu": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "fri": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "sat": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        },
+                        "sun": {
+                          "open": "08:00:00",
+                          "close": "22:00:00"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "httpResponseCode": 500,
+                      "errorCode": "500.12.001",
+                      "errorMessage": "Internal Server Error",
+                      "errorMoreInfo": "http://developer.morrisons.com/docs/errors"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Apikey": []
+          }
+        ]
+      }
+    },
+    "/location/v2/stores/{storeId}/specialopeningtimes": {
+      "get": {
+        "summary": "Store special opening time",
+        "description": "Specifies store special opening time",
+        "tags": ["Special opening time"],
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "description": "Store identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSpecialOpeningTimesOfAStoreResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": [
+                      {
+                        "name": "supermarket",
+                        "specialOpeningTimes": [
+                          {
+                            "date": "2016-12-23",
+                            "open": "06:00:00",
+                            "close": "00:00:00",
+                            "label": "Fri 23 Dec"
+                          },
+                          {
+                            "date": "2016-12-25",
+                            "closed": true,
+                            "label": "Christmas Day"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "cafe",
+                        "specialOpeningTimes": [
+                          {
+                            "date": "2016-12-23",
+                            "open": "06:00:00",
+                            "close": "21:00:00",
+                            "label": "Fri 23 Dec"
+                          },
+                          {
+                            "date": "2016-12-25",
+                            "closed": true,
+                            "label": "Christmas Day"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "pharmacy",
+                        "specialOpeningTimes": [
+                          {
+                            "date": "2016-12-24",
+                            "open": "09:00:00",
+                            "close": "17:00:00",
+                            "label": "Christmas Eve"
+                          },
+                          {
+                            "date": "2016-12-25",
+                            "closed": true,
+                            "label": "Christmas Day"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "pfs",
+                        "specialOpeningTimes": [
+                          {
+                            "date": "2016-12-23",
+                            "open": "05:30:00",
+                            "close": "00:30:00",
+                            "label": "Fri 23 Dec"
+                          },
+                          {
+                            "date": "2016-12-25",
+                            "closed": true,
+                            "label": "Christmas Day"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "httpResponseCode": 500,
+                      "errorCode": "500.12.001",
+                      "errorMessage": "Internal Server Error",
+                      "errorMoreInfo": "http://developer.morrisons.com/docs/errors"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Apikey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Apikey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "apikey",
+        "description": "API key sent as a query parameter for identifying the client."
+      }
+    },
+    "schemas": {
+      "StoreGeneric": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "integer",
+            "description": "storeId of the store"
+          },
+          "storeName": {
+            "type": "string",
+            "description": "name of the Store"
+          },
+          "storeFormat": {
+            "type": "string",
+            "description": "type of store"
+          },
+          "category": {
+            "type": "string",
+            "description": "store category"
+          },
+          "region": {
+            "type": "string",
+            "description": "region of the store"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "addressLine1": {
+                "type": "string",
+                "description": "Address"
+              },
+              "addressLine2": {
+                "type": "string",
+                "description": "Address"
+              },
+              "county": {
+                "type": "string",
+                "description": "County name"
+              },
+              "city": {
+                "type": "string",
+                "description": "city name"
+              },
+              "postcode": {
+                "type": "string",
+                "description": "city postcode"
+              },
+              "country": {
+                "type": "string",
+                "description": "country name"
+              }
+            }
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "format": "double",
+                "description": "store location latitude"
+              },
+              "longitude": {
+                "type": "number",
+                "format": "double",
+                "description": "store location longitude"
+              }
+            }
+          },
+          "satnav": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "format": "double",
+                "description": "store location latitude"
+              },
+              "longitude": {
+                "type": "number",
+                "format": "double",
+                "description": "store location longitude"
+              }
+            }
+          },
+          "openingTimes": {
+            "type": "object",
+            "properties": {
+              "mon": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "tue": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "wed": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "thu": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "fri": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "sat": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              },
+              "sun": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "description": "Opening time"
+                  },
+                  "close": {
+                    "type": "string",
+                    "description": "Closing time"
+                  }
+                }
+              }
+            }
+          },
+          "distance": {
+            "type": "integer",
+            "description": "Distance in metres from the search origin"
+          }
+        }
+      },
+      "GetAllStoresResponse": {
+        "type": "object",
+        "properties": {
+          "stores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreGeneric"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "GetAStoreResponse": {
+        "$ref": "#/components/schemas/StoreGeneric"
+      },
+      "GetOpeningTimesOfAStoreResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "name of the Store"
+            },
+            "mon": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "tue": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "wed": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "thu": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "fri": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "sat": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            },
+            "sun": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Store Opening time"
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Store Closing time"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GetSpecialOpeningTimesOfAStoreResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "name of the store"
+            },
+            "specialOpeningTimes": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "description": "store open date"
+                      },
+                      "open": {
+                        "type": "string",
+                        "description": "store open time"
+                      },
+                      "close": {
+                        "type": "string",
+                        "description": "store close time"
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "Reason for special opening"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "description": "store open date"
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "Reason for special opening"
+                      },
+                      "closed": {
+                        "type": "boolean",
+                        "description": "Store closed on this date"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "httpResponseCode": {
+            "type": "integer",
+            "description": "HTTP response code of the error."
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error code with detailed error code."
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Description of the error."
+          },
+          "errorMoreInfo": {
+            "type": "string",
+            "description": "Developer portal for error references."
+          }
+        }
+      }
+    }
+  }
+}
