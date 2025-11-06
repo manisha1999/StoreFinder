@@ -1,0 +1,74 @@
+.filter-bar {
+  background: #eef2f1;
+  border-radius: 6px;
+  padding: 0.5em 2em 2em 2em;
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+}
+
+.filter-title {
+  font-size: 1.16em;
+  font-weight: 600;
+  color: #343434;
+}
+
+.filter-label {
+  color: #008033;
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.filter-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.filter-options {
+  display: flex;
+  gap: 30px;
+  background: #e6eceb;
+  border-radius: 4px;
+  padding: 1.5em 1em;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.13em;
+}
+
+.checkbox-custom {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: #008033;
+  border-radius: 3px;
+  margin-right: 8px;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+
+.filter-checkbox:not(.checked) .checkbox-custom {
+  background: #e6eceb;
+  border: 2px solid #bfcfc9;
+}
+
+.filter-label-text {
+  font-weight: 500;
+  color: #343434;
+}
+
+.filter-checkbox.checked .checkbox-custom {
+  background: #008033;
+}

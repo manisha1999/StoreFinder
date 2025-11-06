@@ -1,0 +1,57 @@
+.modal-backdrop {
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.05);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2.5em 3em 3em 3em;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  min-width: 650px;
+  max-width: 90vw;
+  position: relative;
+}
+.close-btn {
+  color: #008033;
+  background: none; border: none; font-weight: 700; font-size: 1.07em;
+  position: absolute; right: 2em; top: 2em; cursor: pointer;
+}
+.modal-section {
+  margin-top: 2em;
+}
+.modal-section h3 {
+  font-size: 1.1em;
+  color: #232f35;
+  margin-bottom: 1em;
+  font-weight: 700;
+}
+.modal-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 0;
+  font-size: 1.1em;
+}
+.fancy-checkbox {
+  width: 26px; height: 26px;
+  border-radius: 4px;
+  display: inline-block;
+  background: #eef2f1;
+  border: 2px solid transparent;
+  transition: background .2s;
+}
+.checkbox-label input:checked + .fancy-checkbox {
+  background: #008033;
+  border-color: #008033;
+}
+.checkbox-label input {
+  display: none;
+}

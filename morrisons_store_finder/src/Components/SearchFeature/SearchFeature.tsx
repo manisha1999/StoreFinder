@@ -1,117 +1,191 @@
-import React, { useState } from 'react'
-import './SearchFeature.css'
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useGeocode } from '../../Hooks/useGeoCode';
+import './SearchFeature.css';
+import { BiCurrentLocation } from "react-icons/bi";
+const CurrentLocationIcon = BiCurrentLocation as React.ComponentType<{ className?: string }>;
+const DEBOUNCE_MS = 400;
 
-
-type Coordinates = {
-    lat: number;
-    lon: number;
-};
-
-
-function SearchFeature() {
-    const [postcode, setPostcode] = useState("");
-    const [coords, setCoords] = useState<Coordinates | null>(null);
-    const [error, setError] = useState("");
-    const [clicked, setClicked] = useState(false);
-
-
-
-    async function fetchCoordinates(postcode: string): Promise<Coordinates> {
-        const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(postcode)}&key=${GOOGLE_MAPS_API_KEY}&components=country:GB`;
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Geocoding API failed with status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(data)
-
-        if (data.status !== "OK" || data.results.length === 0) {
-            throw new Error("Postcode not found or invalid.");
-        }
-
-        const { lat, lng } = data.results[0].geometry.location;
-        return { lat, lon: lng };
-    }
-
-    const handleSearch = async () => {
-        setError("");
-        setCoords(null);
-
-        if (!postcode.trim()) {
-            setError("Please enter a postcode.");
-            return;
-        }
-
-        try {
-            const result = await fetchCoordinates(postcode);
-            setCoords(result);
-             
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-    const handleSearchClick = () => {
-        setClicked(true);
-        handleSearch(); // original search function
-      };
-
-    return (
-        <div >
-
-            <div className='search_section'>
-
-            <div className="heading">
-        <h1>Welcome to your Morrisons Store Finder</h1>
-        <p>Enter a postcode or town below to search for your nearest store and find its opening times</p>
-    </div>
-               
-                <div className='input_section'>
-
-                <div className="input_container">
-                    {/* <img src="search_icon" alt="search icon" className="icon" /> */}
-                    <svg className="icon" viewBox="0 0 24 24">
-                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 
-                                6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 
-                                4.23-1.57l.27.28v.79l5 5L20.49 
-                                19l-5-5zm-6 0C8.01 14 6 11.99 
-                                6 9.5S8.01 5 9.5 5 13 7.01 13 
-                                9.5 10.99 14 9.5 14z"/>
-                        </svg>
-
-                    <input
-                        className="input_button"
-                        type="text"
-                        placeholder="Enter Postcode or location"
-                        value={postcode}
-                        onChange={(e) => setPostcode(e.target.value)}
-                    />
-
-                    <img src="current_location_icon" alt="location icon" className="icon" />
-                </div>
-
-                <button 
-                    className={`search_button ${clicked ? "clicked" : ""}`} 
-                    onClick={handleSearchClick}
-                    >
-                    Search
-                </button>
-            </div>
-
-                {/* {coords && (
-          <p>
-            ✅ Coordinates: <strong>Lat:</strong> {coords.lat}, <strong>Lon:</strong> {coords.lon}
-          </p>
-        )} */}
-
-                {error && <p style={{ color: "red" }}>{error}</p>}
-            </div>
-        </div>
-    );
+interface SearchFeatureProps {
+  onSearch: (query: string, coordinates?: { lat: number; lng: number }) => void;
 }
 
-export default SearchFeature
+export function SearchFeature({ onSearch }: SearchFeatureProps) {
+  const [postcode, setPostcode] = useState('');
+  const [clicked, setClicked] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
+
+  // Geocoding
+  const {
+    coordinates,
+    error: geoError,
+    loading: geoLoading,
+    fetchLocationCoordinates,
+  } = useGeocode();
+
+  const trimmedPostcode = useMemo(() => postcode.trim(), [postcode]);
+
+  useEffect(() => {
+    if (coordinates) {
+      onSearch(trimmedPostcode, { lat: coordinates.lat, lng: coordinates.lon });
+    }
+  }, [coordinates, trimmedPostcode, onSearch]);
+
+  const loading = geoLoading;
+  const error = geoError;
+  const canSearch = !loading && trimmedPostcode.length > 0;
+
+  // Debounce state
+  const debounceIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastQueryRef = useRef<string>('');
+
+  // Debounced auto-search on input change
+  useEffect(() => {
+    if (!trimmedPostcode) {
+      lastQueryRef.current = '';
+      return;
+    }
+
+    if (trimmedPostcode === lastQueryRef.current) return;
+
+    if (debounceIdRef.current) {
+      clearTimeout(debounceIdRef.current);
+    }
+
+    debounceIdRef.current = setTimeout(() => {
+      lastQueryRef.current = trimmedPostcode;
+      fetchLocationCoordinates(trimmedPostcode);
+    }, DEBOUNCE_MS);
+
+    return () => {
+      if (debounceIdRef.current) {
+        clearTimeout(debounceIdRef.current);
+      }
+    };
+  }, [trimmedPostcode, fetchLocationCoordinates]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceIdRef.current) {
+        clearTimeout(debounceIdRef.current);
+      }
+    };
+  }, []);
+
+  const handleSearch = () => {
+    if (!trimmedPostcode) return;
+    setClicked(true);
+    if (debounceIdRef.current) {
+      clearTimeout(debounceIdRef.current);
+    }
+    lastQueryRef.current = trimmedPostcode;
+    fetchLocationCoordinates(trimmedPostcode);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    handleSearch();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPostcode(e.target.value);
+    setClicked(false);
+  };
+
+  // Get current location using browser geolocation
+  const handleCurrentLocation = () => {
+    if (!('geolocation' in navigator)) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setGettingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        console.log(`Got location: (${latitude}, ${longitude}), accuracy: ${accuracy} meters`);
+        setGettingLocation(false);
+        // setPostcode('Current Location');
+        onSearch('Current Location', { lat: latitude, lng: longitude });
+      },
+      (err) => {
+       setGettingLocation(false);
+        setPostcode('');
+        console.error('Geolocation error:', err);
+        
+        let errorMessage = 'Unable to get your location. ';
+        if (err.code === err.PERMISSION_DENIED) {
+          errorMessage += 'Please enable location access in your browser settings.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          errorMessage += 'Location information is unavailable.';
+        } else if (err.code === err.TIMEOUT) {
+          errorMessage += 'Location request timed out.';
+        }
+        
+        alert(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  return (
+    <div className="search-container">
+      <div className="search_section">
+        <header className="heading">
+          <h1>Welcome to your Morrisons Store Finder</h1>
+          <p>Enter a postcode or town below to search for your nearest store and find its opening times</p>
+        </header>
+
+        <form className="input_section" onSubmit={handleSubmit}>
+          <div className="input_container">
+            <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.49 19l-5-5zm-6 0C8.01 14 6 11.99 6 9.5S8.01 5 9.5 5 13 7.01 13 9.5 10.99 14 9.5 14z" />
+            </svg>
+            <input
+              className="input_button"
+              type="text"
+              placeholder="Enter Postcode or location"
+              value={postcode}
+              onChange={handleInputChange}
+              disabled={loading || gettingLocation}
+              aria-label="Postcode or location search"
+              autoComplete="postal-code"
+            />
+          <button
+              type="button"
+              className="current-location-badge"
+              onClick={handleCurrentLocation}
+              disabled={loading || gettingLocation}
+              aria-label="Use current location"
+              title="Use my current location"
+            >
+              <CurrentLocationIcon
+                className={`current-location-icon ${gettingLocation ? 'spinning' : ''}`}
+              />
+            </button>
+          </div>
+          <button
+            type="submit"
+            className={`search_button ${clicked ? 'clicked' : ''} ${loading ? 'loading' : ''}`}
+            disabled={!canSearch}
+            aria-label="Search for stores"
+          >
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </form>
+
+        {error && (
+          <p className="error-message" role="alert" aria-live="polite">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default SearchFeature;

@@ -1,0 +1,185 @@
+.store-detail-page {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f9f9f9;
+}
+
+.store-detail-container {
+  
+  
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header styles */
+.detail-header {
+  background-image: linear-gradient(90deg, #004e37, #00893f);
+  height: 8rem;
+  color: white;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.store-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Main content styles */
+.detail-content {
+  padding: 1.5rem;
+}
+
+/* Section styles */
+.detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.section-header h2 {
+  margin-left: 0.5rem;
+  font-size: 1.25rem;
+}
+/* Content */
+.detail-content {
+  padding: 1.5rem;
+}
+
+/* Split: Opening (30%) | Services (70%) */
+.opening-services-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* Left: Opening hours (30%) */
+.opening-times-section {
+  width: 30%;
+  min-width: 260px;
+}
+
+.opening-times-section h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+/* Opening times styles */
+.opening-times-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.opening-time-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.day-name {
+  font-weight: bold;
+}
+
+.day-hours {
+  color: #555;
+}
+
+.services-section {
+  width: 70%;
+  margin: 40px 40px 40px 40px;
+}
+
+.services-section h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.services-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  gap: 4rem;
+}
+.service-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 7rem;
+  height: 5rem;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 8px;
+  color: #2c3e50;
+}
+
+.service-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* List styles for departments and services */
+.list-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.list-item {
+  background: #f1f1f1;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+/* Linked stores styles */
+.linked-stores-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.linked-store-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.distance-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
