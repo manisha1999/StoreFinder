@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useGeocode } from '../../Hooks/useGeoCode';
 import './SearchFeature.css';
 import { BiCurrentLocation } from "react-icons/bi";
+
 const CurrentLocationIcon = BiCurrentLocation as React.ComponentType<{ className?: string }>;
 const DEBOUNCE_MS = 400;
 
@@ -14,24 +15,9 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
   const [clicked, setClicked] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
 
-  // Geocoding
-  const {
-    coordinates,
-    error: geoError,
-    loading: geoLoading,
-    fetchLocationCoordinates,
-  } = useGeocode();
-
   const trimmedPostcode = useMemo(() => postcode.trim(), [postcode]);
 
-  useEffect(() => {
-    if (coordinates) {
-      onSearch(trimmedPostcode, { lat: coordinates.lat, lng: coordinates.lon });
-    }
-  }, [coordinates, trimmedPostcode, onSearch]);
-
-  const loading = geoLoading;
-  const error = geoError;
+  const loading = gettingLocation;
   const canSearch = !loading && trimmedPostcode.length > 0;
 
   // Debounce state
@@ -52,8 +38,10 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
     }
 
     debounceIdRef.current = setTimeout(() => {
+      console.log('⏱️ Debounced search triggered for:', trimmedPostcode);
       lastQueryRef.current = trimmedPostcode;
-      fetchLocationCoordinates(trimmedPostcode);
+      // Just call onSearch with postcode, let Home handle the geocoding
+      onSearch(trimmedPostcode);
     }, DEBOUNCE_MS);
 
     return () => {
@@ -61,7 +49,7 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
         clearTimeout(debounceIdRef.current);
       }
     };
-  }, [trimmedPostcode, fetchLocationCoordinates]);
+  }, [trimmedPostcode, onSearch]);
 
   useEffect(() => {
     return () => {
@@ -73,12 +61,14 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
 
   const handleSearch = () => {
     if (!trimmedPostcode) return;
+    console.log('🔍 Manual search triggered for:', trimmedPostcode);
     setClicked(true);
     if (debounceIdRef.current) {
       clearTimeout(debounceIdRef.current);
     }
     lastQueryRef.current = trimmedPostcode;
-    fetchLocationCoordinates(trimmedPostcode);
+    // Just call onSearch with postcode, let Home handle the geocoding
+    onSearch(trimmedPostcode);
   };
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -98,20 +88,21 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
       return;
     }
 
+    console.log('📍 Getting current location...');
     setGettingLocation(true);
     
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude, accuracy } = position.coords;
-        console.log(`Got location: (${latitude}, ${longitude}), accuracy: ${accuracy} meters`);
+        console.log(`✅ Got location: (${latitude}, ${longitude}), accuracy: ${accuracy}m`);
         setGettingLocation(false);
-        // setPostcode('Current Location');
+        // For current location, pass coordinates directly
         onSearch('Current Location', { lat: latitude, lng: longitude });
       },
       (err) => {
-       setGettingLocation(false);
+        setGettingLocation(false);
         setPostcode('');
-        console.error('Geolocation error:', err);
+        console.error('❌ Geolocation error:', err);
         
         let errorMessage = 'Unable to get your location. ';
         if (err.code === err.PERMISSION_DENIED) {
@@ -155,7 +146,7 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
               aria-label="Postcode or location search"
               autoComplete="postal-code"
             />
-          <button
+            <button
               type="button"
               className="current-location-badge"
               onClick={handleCurrentLocation}
@@ -177,12 +168,6 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
             {loading ? 'Searching...' : 'Search'}
           </button>
         </form>
-
-        {error && (
-          <p className="error-message" role="alert" aria-live="polite">
-            {error}
-          </p>
-        )}
       </div>
     </div>
   );
