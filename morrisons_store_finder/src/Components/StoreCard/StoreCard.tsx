@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
+import { storeCache } from '../StoreCache/StoreCache';
+import {favoritesService}  from '../Favourites/Favourites';
 import './StoreCard.css';
 
 type AddressObject = {
@@ -33,6 +35,11 @@ export type Store = {
   address?: string | AddressObject | null;
   distance?: number | null;
   openingTimes?: OpeningTimes | null;
+  // Add any other fields that exist in your full store object
+  storeFormat?: string;
+  category?: string;
+  location?: any;
+  telephone?: string;
 };
 
 interface StoreCardProps {
@@ -106,48 +113,97 @@ const formatDistanceMiles = (meters: unknown): string => {
   const n = typeof meters === 'number' ? meters : NaN;
   return Number.isFinite(n) ? (n / METERS_TO_MILES).toFixed(2) : 'N/A';
 };
+
 const generateSlug = (storeName: string): string => {
   if (!storeName || typeof storeName !== 'string') {
     return '';
   }
   return storeName
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
     .trim();
 };
 
-
 export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   const navigate = useNavigate();
-const { fetchDetails } = useStoreDetails();
+  const { details,fetchDetails } = useStoreDetails();
+  
+  // Favorite state
+  const storeId = String(store.name);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Check if favorite on mount and listen for changes
+  useEffect(() => {
+    setIsFavorite(favoritesService.isFavorite(storeId));
+
+    const handleFavoritesChange = () => {
+      setIsFavorite(favoritesService.isFavorite(storeId));
+    };
+
+    window.addEventListener('favorites-changed', handleFavoritesChange);
+    return () => {
+      window.removeEventListener('favorites-changed', handleFavoritesChange);
+    };
+  }, [storeId]);
+
   // Memoize expensive computations
   const storeStatus = useMemo(() => getStoreStatus(store.openingTimes), [store.openingTimes]);
   const addressText = useMemo(() => getAddressLine1(store.address), [store.address]);
   const distanceText = useMemo(() => formatDistanceMiles(store.distance), [store.distance]);
-const storeSlug = useMemo(() => generateSlug(store.storeName), [store.storeName]);
+  const storeSlug = useMemo(() => generateSlug(store.storeName), [store.storeName]);
+
   const handleCardClick = async () => {
     try {
+      console.log('🔍 Fetching store details for:', storeId);
+      
       // Trigger API call first
-      const storeData = await fetchDetails(store.name.toString());
-      console.log('Fetched store details:', storeData);
+      const storeData = await fetchDetails(storeId);
+      console.log('✅ Fetched store details:', storeData);
+      
+      // Cache the full store data for 30 minutes
+      // storeCache.set(storeId, storeData || store);
+     const dataToCache = details || store;
+      storeCache.set(storeId, dataToCache);
+      console.log('💾 Cached store data');
       
       // Then navigate with correct URL format: /storefinder/{id}/{store-name-slug}
-      navigate(`/storefinder/${store.name}/${storeSlug}`);
+      navigate(`/storefinder/${storeId}/${storeSlug}`);
     } catch (error) {
-      console.error('Error fetching store details:', error);
+      console.error('❌ Error fetching store details:', error);
+      
+      // Cache whatever data we have (from the store list)
+      storeCache.set(storeId, store);
+      
       // Still navigate even if API fails (detail page will handle the error)
-      navigate(`/storefinder/${store.name}/${storeSlug}`);
+      navigate(`/storefinder/${storeId}/${storeSlug}`);
     }
   };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
+
+    if (isFavorite) {
+      favoritesService.remove(storeId);
+      setIsFavorite(false);
+      console.log('🗑️ Removed from favorites:', storeId);
+    } else {
+      favoritesService.add(store);
+      setIsFavorite(true);
+      console.log('⭐ Added to favorites:', storeId);
+    }
+
+    // Notify other components
+    window.dispatchEvent(new Event('favorites-changed'));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleCardClick();
     }
   };
-
 
   return (
     <li 
@@ -160,18 +216,25 @@ const storeSlug = useMemo(() => generateSlug(store.storeName), [store.storeName]
     >
       <div className="store-card-header">
         <h3 className="store-name">{store.storeName}</h3>
-        <span className="store-distance" aria-label={`${distanceText} miles away`}>
-          {distanceText} miles
-        </span>
+        <div className="store-card-actions">
+          <button
+            className={`favorite-icon ${isFavorite ? 'active' : ''}`}
+            onClick={handleToggleFavorite}
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? '⭐' : '☆'}
+          </button>
+          <span className="store-distance" aria-label={`${distanceText} miles away`}>
+            {distanceText} miles
+          </span>
+        </div>
       </div>
       <div className="store-card-body">
         <p className="store-address">
-          
           {addressText}
         </p>
-       
         <p className={`store-hours ${storeStatus.isOpen ? 'open' : 'closed'}`}>
-          
           <span className="status-text">{storeStatus.displayText}</span>
         </p>
       </div>
