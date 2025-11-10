@@ -82,6 +82,7 @@ const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { details, loading, error, fetchDetails, clearDetails } = useStoreDetails();
+  console.log("details:", details);
 
   useEffect(() => {
   if (!storeId) {
@@ -143,7 +144,7 @@ const StoreDetailPage: React.FC = () => {
       </div>
     );
   }
-
+console.log('✅ Rendering store details:', details);
   return (
     <div className="store-detail-page">
       <div className="store-detail-container">
