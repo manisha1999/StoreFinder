@@ -1,119 +1,364 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useGeocode } from '../../Hooks/useGeoCode';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './SearchFeature.css';
-import { BiCurrentLocation } from "react-icons/bi";
 
-const CurrentLocationIcon = BiCurrentLocation as React.ComponentType<{ className?: string }>;
-const DEBOUNCE_MS = 400;
+const MIN_SEARCH_LENGTH = 3;
+const MAX_SEARCH_LENGTH = 100;
 
 interface SearchFeatureProps {
   onSearch: (query: string, coordinates?: { lat: number; lng: number }) => void;
+  /** Optional: Called when an error occurs */
+  onError?: (error: Error) => void;
+  /** Optional: Initial search value */
+  initialValue?: string;
+  /** Optional: Disable the entire component */
+  disabled?: boolean;
 }
 
-export function SearchFeature({ onSearch }: SearchFeatureProps) {
-  const [postcode, setPostcode] = useState('');
-  const [clicked, setClicked] = useState(false);
-  const [gettingLocation, setGettingLocation] = useState(false);
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
 
-  const trimmedPostcode = useMemo(() => postcode.trim(), [postcode]);
+// Type guard to validate coordinates
+const isValidCoordinates = (coords: unknown): coords is Coordinates => {
+  if (typeof coords !== 'object' || coords === null) return false;
+  const { lat, lng } = coords as Record<string, unknown>;
+  return (
+    typeof lat === 'number' &&
+    typeof lng === 'number' &&
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+};
 
-  const loading = gettingLocation;
-  const canSearch = !loading && trimmedPostcode.length > 0;
+// Validation error types for better error handling
+type ValidationErrorType = 
+  | 'EMPTY_INPUT'
+  | 'TOO_SHORT'
+  | 'TOO_LONG'
+  | 'GEOLOCATION_NOT_SUPPORTED'
+  | 'GEOLOCATION_PERMISSION_DENIED'
+  | 'GEOLOCATION_UNAVAILABLE'
+  | 'GEOLOCATION_TIMEOUT'
+  | 'INVALID_CHARACTERS'
+  | 'UNKNOWN';
 
-  // Debounce state
-  const debounceIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastQueryRef = useRef<string>('');
+interface ValidationError {
+  type: ValidationErrorType;
+  message: string;
+}
 
-  // Debounced auto-search on input change
+// ✅ Custom Location Icon (no react-icons dependency)
+const LocationIcon: React.FC<{ className?: string }> = ({ className }) => {
+  return (
+    <svg 
+      className={className}
+      viewBox="0 0 24 24" 
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      width="24"
+      height="24"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="22" y2="12" />
+    </svg>
+  );
+};
+
+export const SearchFeature: React.FC<SearchFeatureProps> = ({ 
+  onSearch, 
+  onError,
+  initialValue = '',
+  disabled = false
+}) => {
+  const [postcode, setPostcode] = useState<string>(initialValue);
+  const [gettingLocation, setGettingLocation] = useState<boolean>(false);
+  const [validationError, setValidationError] = useState<ValidationError | null>(null);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // ✅ Validate input for invalid characters (optional security check)
+  const validateInput = useCallback((input: string): ValidationError | null => {
+    const trimmed = input.trim();
+
+    if (!trimmed) {
+      return {
+        type: 'EMPTY_INPUT',
+        message: 'Please enter a postcode or location'
+      };
+    }
+
+    if (trimmed.length < MIN_SEARCH_LENGTH) {
+      return {
+        type: 'TOO_SHORT',
+        message: `Please enter at least ${MIN_SEARCH_LENGTH} characters`
+      };
+    }
+
+    if (trimmed.length > MAX_SEARCH_LENGTH) {
+      return {
+        type: 'TOO_LONG',
+        message: `Search is too long (max ${MAX_SEARCH_LENGTH} characters)`
+      };
+    }
+
+    // ✅ Check for potentially dangerous characters (XSS prevention)
+    const dangerousChars = /[<>{}[\]\\]/;
+    if (dangerousChars.test(trimmed)) {
+      return {
+        type: 'INVALID_CHARACTERS',
+        message: 'Invalid characters detected. Please use only letters, numbers, and spaces.'
+      };
+    }
+
+    return null;
+  }, []);
+
+  // ✅ Auto-focus input on mount
   useEffect(() => {
-    if (!trimmedPostcode) {
-      lastQueryRef.current = '';
-      return;
+    if (!disabled) {
+      searchInputRef.current?.focus();
     }
+  }, [disabled]);
 
-    if (trimmedPostcode === lastQueryRef.current) return;
+  // ✅ Global keyboard shortcuts
+  useEffect(() => {
+    if (disabled) return;
 
-    if (debounceIdRef.current) {
-      clearTimeout(debounceIdRef.current);
-    }
+    const handleGlobalKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
 
-    debounceIdRef.current = setTimeout(() => {
-      console.log('⏱️ Debounced search triggered for:', trimmedPostcode);
-      lastQueryRef.current = trimmedPostcode;
-      // Just call onSearch with postcode, let Home handle the geocoding
-      onSearch(trimmedPostcode);
-    }, DEBOUNCE_MS);
-
-    return () => {
-      if (debounceIdRef.current) {
-        clearTimeout(debounceIdRef.current);
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
       }
     };
-  }, [trimmedPostcode, onSearch]);
 
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [disabled]);
+
+  // ✅ Clear validation error when user types
+  useEffect(() => {
+    const trimmed = postcode.trim();
+    
+    if (validationError && trimmed.length > 0) {
+      setValidationError(null);
+    }
+  }, [postcode, validationError]);
+
+  // ✅ Cleanup on unmount (abort any pending geolocation)
   useEffect(() => {
     return () => {
-      if (debounceIdRef.current) {
-        clearTimeout(debounceIdRef.current);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, []);
 
-  const handleSearch = () => {
-    if (!trimmedPostcode) return;
-    console.log('🔍 Manual search triggered for:', trimmedPostcode);
-    setClicked(true);
-    if (debounceIdRef.current) {
-      clearTimeout(debounceIdRef.current);
-    }
-    lastQueryRef.current = trimmedPostcode;
-    // Just call onSearch with postcode, let Home handle the geocoding
-    onSearch(trimmedPostcode);
-  };
-
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+  // ✅ Handle form submit with comprehensive error handling
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    handleSearch();
-  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPostcode(e.target.value);
-    setClicked(false);
-  };
+    if (disabled) return;
 
-  // Get current location using browser geolocation
-  const handleCurrentLocation = () => {
-    if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported by your browser');
+    const trimmed = postcode.trim();
+    const error = validateInput(trimmed);
+
+    if (error) {
+      setValidationError(error);
+      searchInputRef.current?.focus();
+
+      // ✅ Call error callback if provided
+      if (onError) {
+        onError(new Error(`Validation Error: ${error.message}`));
+      }
       return;
     }
 
-    console.log('📍 Getting current location...');
+    try {
+      console.log('🔍 Search triggered for:', trimmed);
+      setValidationError(null);
+      onSearch(trimmed);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setValidationError({
+        type: 'UNKNOWN',
+        message: `Search failed: ${errorMessage}`
+      });
+
+      if (onError) {
+        onError(err instanceof Error ? err : new Error(errorMessage));
+      }
+    }
+  }, [postcode, onSearch, onError, disabled, validateInput]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value;
+
+    // ✅ Sanitize input: prevent excessive length
+    if (value.length > MAX_SEARCH_LENGTH) {
+      setValidationError({
+        type: 'TOO_LONG',
+        message: `Maximum ${MAX_SEARCH_LENGTH} characters allowed`
+      });
+      return;
+    }
+
+    // Clear validation error when user types valid length
+    if (validationError && value.trim().length >= MIN_SEARCH_LENGTH) {
+      setValidationError(null);
+    }
+
+    setPostcode(value);
+  }, [validationError]);
+
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setPostcode('');
+      setValidationError(null);
+    }
+  }, []);
+
+  const handleCurrentLocation = useCallback((): void => {
+    if (disabled) return;
+
+    // ✅ Check geolocation support
+    if (!('geolocation' in navigator)) {
+      const error: ValidationError = {
+        type: 'GEOLOCATION_NOT_SUPPORTED',
+        message: 'Geolocation is not supported by your browser'
+      };
+      setValidationError(error);
+      searchInputRef.current?.focus();
+
+      if (onError) {
+        onError(new Error(error.message));
+      }
+      return;
+    }
+
+    // ✅ Abort previous geolocation request if exists
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setGettingLocation(true);
-    
+    setValidationError(null);
+
+    const timeoutId = setTimeout(() => {
+      setGettingLocation(false);
+      const error: ValidationError = {
+        type: 'GEOLOCATION_TIMEOUT',
+        message: 'Location request timed out. Please try again or enter a postcode.'
+      };
+      setValidationError(error);
+
+      if (onError) {
+        onError(new Error(error.message));
+      }
+    }, 10000);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        console.log(`✅ Got location: (${latitude}, ${longitude}), accuracy: ${accuracy}m`);
+      (position: GeolocationPosition) => {
+        clearTimeout(timeoutId);
         setGettingLocation(false);
-        // For current location, pass coordinates directly
-        onSearch('Current Location', { lat: latitude, lng: longitude });
+
+        const coords: Coordinates = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        // ✅ Validate coordinates
+        if (!isValidCoordinates(coords)) {
+          const error: ValidationError = {
+            type: 'GEOLOCATION_UNAVAILABLE',
+            message: 'Invalid location data received. Please try again.'
+          };
+          setValidationError(error);
+
+          if (onError) {
+            onError(new Error(error.message));
+          }
+          return;
+        }
+
+        try {
+          setPostcode('Current Location');
+          setValidationError(null);
+          onSearch('Current Location', coords);
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setValidationError({
+            type: 'UNKNOWN',
+            message: `Failed to search location: ${errorMessage}`
+          });
+
+          if (onError) {
+            onError(err instanceof Error ? err : new Error(errorMessage));
+          }
+        }
       },
-      (err) => {
+      (err: GeolocationPositionError) => {
+        clearTimeout(timeoutId);
         setGettingLocation(false);
         setPostcode('');
-        console.error('❌ Geolocation error:', err);
-        
-        let errorMessage = 'Unable to get your location. ';
-        if (err.code === err.PERMISSION_DENIED) {
-          errorMessage += 'Please enable location access in your browser settings.';
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          errorMessage += 'Location information is unavailable.';
-        } else if (err.code === err.TIMEOUT) {
-          errorMessage += 'Location request timed out.';
+
+        let error: ValidationError;
+
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            error = {
+              type: 'GEOLOCATION_PERMISSION_DENIED',
+              message: 'Location access denied. Please enable location permissions in your browser settings.'
+            };
+            break;
+          case err.POSITION_UNAVAILABLE:
+            error = {
+              type: 'GEOLOCATION_UNAVAILABLE',
+              message: 'Location information is unavailable. Please try again or enter a postcode.'
+            };
+            break;
+          case err.TIMEOUT:
+            error = {
+              type: 'GEOLOCATION_TIMEOUT',
+              message: 'Location request timed out. Please try again or enter a postcode.'
+            };
+            break;
+          default:
+            error = {
+              type: 'UNKNOWN',
+              message: 'Unable to get your location. Please enter a postcode.'
+            };
         }
-        
-        alert(errorMessage);
+
+        setValidationError(error);
+        searchInputRef.current?.focus();
+
+        if (onError) {
+          onError(new Error(`Geolocation Error (${err.code}): ${error.message}`));
+        }
       },
       {
         enableHighAccuracy: true,
@@ -121,7 +366,12 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
         maximumAge: 0,
       }
     );
-  };
+  }, [onSearch, onError, disabled]);
+
+  const loading = gettingLocation;
+  const trimmedLength = postcode.trim().length;
+  const canSearch = !loading && !disabled && trimmedLength >= MIN_SEARCH_LENGTH;
+  const showLengthWarning = trimmedLength > 0 && trimmedLength < MIN_SEARCH_LENGTH;
 
   return (
     <div className="search-container">
@@ -131,46 +381,110 @@ export function SearchFeature({ onSearch }: SearchFeatureProps) {
           <p>Enter a postcode or town below to search for your nearest store and find its opening times</p>
         </header>
 
-        <form className="input_section" onSubmit={handleSubmit}>
+        {/* ✅ Validation Error Banner */}
+        {validationError && (
+          <div 
+            className="validation-error" 
+            role="alert" 
+            aria-live="assertive"
+          >
+            <svg 
+              className="error-icon" 
+              viewBox="0 0 24 24" 
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+            </svg>
+            <span>{validationError.message}</span>
+            <button
+              className="error-close"
+              onClick={() => setValidationError(null)}
+              aria-label="Dismiss error"
+              type="button"
+              disabled={disabled}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <form className="input_section" onSubmit={handleSubmit} noValidate>
           <div className="input_container">
             <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.49 19l-5-5zm-6 0C8.01 14 6 11.99 6 9.5S8.01 5 9.5 5 13 7.01 13 9.5 10.99 14 9.5 14z" />
             </svg>
             <input
-              className="input_button"
-              type="text"
+              ref={searchInputRef}
+              className={`input_button ${validationError ? 'error' : ''} ${showLengthWarning ? 'warning' : ''}`}
+              type="search"
               placeholder="Enter Postcode or location"
               value={postcode}
               onChange={handleInputChange}
-              disabled={loading || gettingLocation}
+              onKeyDown={handleInputKeyDown}
+              disabled={loading || disabled}
               aria-label="Postcode or location search"
+              aria-describedby="search-hint"
+              aria-invalid={!!validationError}
               autoComplete="postal-code"
+              enterKeyHint="search"
+              minLength={MIN_SEARCH_LENGTH}
+              maxLength={MAX_SEARCH_LENGTH}
+              required
             />
+
+            
+
             <button
               type="button"
               className="current-location-badge"
               onClick={handleCurrentLocation}
-              disabled={loading || gettingLocation}
-              aria-label="Use current location"
+              disabled={loading || disabled}
+              aria-label={loading ? 'Getting your location...' : 'Use current location'}
               title="Use my current location"
             >
-              <CurrentLocationIcon
+              <LocationIcon
                 className={`current-location-icon ${gettingLocation ? 'spinning' : ''}`}
               />
             </button>
           </div>
           <button
             type="submit"
-            className={`search_button ${clicked ? 'clicked' : ''} ${loading ? 'loading' : ''}`}
+            className="search_button"
             disabled={!canSearch}
-            aria-label="Search for stores"
+            aria-label={
+              'Enter Postcode or location'
+            }
           >
             {loading ? 'Searching...' : 'Search'}
           </button>
         </form>
+
+        {/* ✅ Visual hints */}
+        {showLengthWarning && !validationError && (
+          <p className="input-hint warning" aria-hidden="true">
+            ⚠️ Enter at least {MIN_SEARCH_LENGTH} characters (current: {trimmedLength})
+          </p>
+        )}
+
+        {trimmedLength >= MIN_SEARCH_LENGTH && !validationError && !disabled && (
+          <p className="input-hint success" aria-hidden="true">
+            ✓ Ready to search
+          </p>
+        )}
+
+        {disabled && (
+          <p className="input-hint disabled" aria-hidden="true">
+            Search is currently disabled
+          </p>
+        )}
       </div>
     </div>
   );
-}
+};
 
+// ✅ Named export for better tree-shaking
 export default SearchFeature;
+
+// ✅ Export types for consumers
+export type { SearchFeatureProps, ValidationErrorType };

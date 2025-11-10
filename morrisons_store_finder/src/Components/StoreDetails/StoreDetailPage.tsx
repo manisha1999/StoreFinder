@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
 import { storeCache } from '../StoreCache/StoreCache';
-// import morrisonsLogo from '../../assets/morrisonsLogo.png';
 import { SiMorrisons } from "react-icons/si";
-
 import './StoreDetailsPage.css';
 
 // Types
@@ -82,37 +80,55 @@ const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { details, loading, error, fetchDetails, clearDetails } = useStoreDetails();
+  
+  // ✅ Track if we're using cached data
+  const [cachedData, setCachedData] = useState<any>(null);
+
   console.log("details:", details);
 
   useEffect(() => {
-  if (!storeId) {
-    navigate('/');
-    return;
-  }
+    if (!storeId) {
+      navigate('/');
+      return;
+    }
 
-  // Try to get from cache first
-  const cached = storeCache.get(storeId);
-  if (cached) {
-    console.log('✅ Using cached store data - API CALL SKIPPED');
-    console.log('📦 Cached data:', cached);
-    // Use cached data if your hook supports it
-  } else {
-    console.log('❌ No cache found - will fetch from API');
-  }
+    console.log('\n🔍 ========== CACHE CHECK START ==========');
+    console.log(`🔍 Store ID: ${storeId}`);
 
-  // Fetch details (will call API if not using cache)
-  console.log('📡 Calling fetchDetails...');
-  fetchDetails(storeId);
+    // ✅ Check cache FIRST
+    const cached = storeCache.get(storeId);
+    
+    if (cached) {
+      console.log('✅ CACHE HIT - Using cached data');
+      console.log('📦 Cached data:', cached);
+      console.log('🚫 API CALL SKIPPED ✨');
+      console.log('========== CACHE CHECK END (CACHED) ==========\n');
+      
+      // ✅ Set cached data and SKIP fetchDetails
+      setCachedData(cached);
+      return; // ✅ EARLY RETURN - Don't call fetchDetails!
+    }
 
-  // ...existing code...
-}, [storeId, fetchDetails, clearDetails, navigate]);
+    console.log('❌ CACHE MISS - Will fetch from API');
+    console.log('📡 Calling fetchDetails...');
+    console.log('========== CACHE CHECK END (FETCHING) ==========\n');
+    
+    // ✅ Clear cached data and fetch from API
+    setCachedData(null);
+    fetchDetails(storeId);
 
-
-
+    return () => {
+      clearDetails();
+    };
+  }, [storeId, fetchDetails, clearDetails, navigate]);
 
   const MorrisonsIcon = SiMorrisons as React.ComponentType<{ className?: string }>;
 
-  if (loading) {
+  // ✅ Use cached data if available, otherwise use details from hook
+  const displayData = cachedData || details;
+
+  // ✅ Only show loading if we're not using cache
+  if (loading && !cachedData) {
     return (
       <div className="store-detail-page">
         <div className="loading-container">
@@ -123,7 +139,8 @@ const StoreDetailPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  // ✅ Only show error if we're not using cache
+  if (error && !cachedData) {
     return (
       <div className="store-detail-page">
         <div className="error-container">
@@ -134,7 +151,7 @@ const StoreDetailPage: React.FC = () => {
     );
   }
 
-  if (!details) {
+  if (!displayData) {
     return (
       <div className="store-detail-page">
         <div className="error-container">
@@ -144,21 +161,24 @@ const StoreDetailPage: React.FC = () => {
       </div>
     );
   }
-console.log('✅ Rendering store details:', details);
+
+  console.log('✅ Rendering store details:', displayData);
+  console.log(`📊 Data source: ${cachedData ? 'CACHE ⚡' : 'API 🌐'}`);
+
   return (
     <div className="store-detail-page">
       <div className="store-detail-container">
         {/* Header with store name and opening time */}
         <div className="detail-header">
-          <div className="detail_store_header">Store Finder {'>'} {details.storeName}</div>
-          <div><h1 className="store-title">{details.storeName}</h1></div>
+          <div className="detail_store_header">Store Finder {'>'} {displayData.storeName}</div>
+          <div><h1 className="store-title">{displayData.storeName}</h1></div>
           <div><p className="store-hours">
-            {details.openingTimes.open} - {details.openingTimes.close}
+            {displayData.openingTimes.open} - {displayData.openingTimes.close}
           </p></div>
         </div>
 
         {/* Main Content */}
-         <div className="detail-content">
+        <div className="detail-content">
           <div className="opening-services-container">
             {/* Left: Opening hours */}
             <section className="opening-times-section">
@@ -169,7 +189,7 @@ console.log('✅ Rendering store details:', details);
                     mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
                     thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
                   };
-                  const times = (details.openingTimes as any)?.[dayKey];
+                  const times = (displayData.openingTimes as any)?.[dayKey];
                   const format = (t?: string) => {
                     if (!t) return '';
                     const [h, m] = t.split(':'); let hr = parseInt(h, 10);
@@ -188,13 +208,12 @@ console.log('✅ Rendering store details:', details);
               </ul>
             </section>
 
-
             {/* Services Section */}
             <div className="services-section">
               <h2>Services</h2>
               <ul className="services-list">
-                {details.services && details.services.length > 0 ? (
-                  details.services.map((service: any, index: number) => (
+                {displayData.services && displayData.services.length > 0 ? (
+                  displayData.services.map((service: any, index: number) => (
                     <li key={index} className="service-item">
                       <div className="service-content">
                         <div className="service-icon-badge">
