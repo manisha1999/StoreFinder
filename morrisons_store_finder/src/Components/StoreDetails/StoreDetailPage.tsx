@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
 import { storeCache } from '../StoreCache/StoreCache';
+// import morrisonsLogo from '../../assets/morrisonsLogo.png';
 import { SiMorrisons } from "react-icons/si";
+
 import './StoreDetailsPage.css';
 
 // Types
@@ -16,7 +18,7 @@ type OpeningTimes = {
   tue?: DayOpeningHours;
   wed?: DayOpeningHours;
   thu?: DayOpeningHours;
-  fri?: DayOpeningHours;
+  fri?: DayOpeningHours; 
   sat?: DayOpeningHours;
   sun?: DayOpeningHours;
 };
@@ -80,55 +82,37 @@ const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { details, loading, error, fetchDetails, clearDetails } = useStoreDetails();
-  
-  // ✅ Track if we're using cached data
-  const [cachedData, setCachedData] = useState<any>(null);
-
   console.log("details:", details);
 
   useEffect(() => {
-    if (!storeId) {
-      navigate('/');
-      return;
-    }
+  if (!storeId) {
+    navigate('/');
+    return;
+  }
 
-    console.log('\n🔍 ========== CACHE CHECK START ==========');
-    console.log(`🔍 Store ID: ${storeId}`);
+  // Try to get from cache first
+  const cached = storeCache.get(storeId);
+  if (cached) {
+    console.log('✅ Using cached store data - API CALL SKIPPED');
+    console.log('📦 Cached data:', cached);
+    // Use cached data if your hook supports it
+  } else {
+    console.log('❌ No cache found - will fetch from API');
+  }
 
-    // ✅ Check cache FIRST
-    const cached = storeCache.get(storeId);
-    
-    if (cached) {
-      console.log('✅ CACHE HIT - Using cached data');
-      console.log('📦 Cached data:', cached);
-      console.log('🚫 API CALL SKIPPED ✨');
-      console.log('========== CACHE CHECK END (CACHED) ==========\n');
-      
-      // ✅ Set cached data and SKIP fetchDetails
-      setCachedData(cached);
-      return; // ✅ EARLY RETURN - Don't call fetchDetails!
-    }
+  // Fetch details (will call API if not using cache)
+  console.log('📡 Calling fetchDetails...');
+  fetchDetails(storeId);
 
-    console.log('❌ CACHE MISS - Will fetch from API');
-    console.log('📡 Calling fetchDetails...');
-    console.log('========== CACHE CHECK END (FETCHING) ==========\n');
-    
-    // ✅ Clear cached data and fetch from API
-    setCachedData(null);
-    fetchDetails(storeId);
+  // ...existing code...
+}, [storeId, fetchDetails, clearDetails, navigate]);
 
-    return () => {
-      clearDetails();
-    };
-  }, [storeId, fetchDetails, clearDetails, navigate]);
+
+
 
   const MorrisonsIcon = SiMorrisons as React.ComponentType<{ className?: string }>;
 
-  // ✅ Use cached data if available, otherwise use details from hook
-  const displayData = cachedData || details;
-
-  // ✅ Only show loading if we're not using cache
-  if (loading && !cachedData) {
+  if (loading) {
     return (
       <div className="store-detail-page">
         <div className="loading-container">
@@ -139,8 +123,7 @@ const StoreDetailPage: React.FC = () => {
     );
   }
 
-  // ✅ Only show error if we're not using cache
-  if (error && !cachedData) {
+  if (error) {
     return (
       <div className="store-detail-page">
         <div className="error-container">
@@ -151,7 +134,7 @@ const StoreDetailPage: React.FC = () => {
     );
   }
 
-  if (!displayData) {
+  if (!details) {
     return (
       <div className="store-detail-page">
         <div className="error-container">
@@ -161,24 +144,21 @@ const StoreDetailPage: React.FC = () => {
       </div>
     );
   }
-
-  console.log('✅ Rendering store details:', displayData);
-  console.log(`📊 Data source: ${cachedData ? 'CACHE ⚡' : 'API 🌐'}`);
-
+console.log('✅ Rendering store details:', details);
   return (
     <div className="store-detail-page">
       <div className="store-detail-container">
         {/* Header with store name and opening time */}
         <div className="detail-header">
-          <div className="detail_store_header">Store Finder {'>'} {displayData.storeName}</div>
-          <div><h1 className="store-title">{displayData.storeName}</h1></div>
+          <div className="detail_store_header">Store Finder {'>'} {details.storeName}</div>
+          <div><h1 className="store-title">{details.storeName}</h1></div>
           <div><p className="store-hours">
-            {displayData.openingTimes.open} - {displayData.openingTimes.close}
+            {details.openingTimes.open} - {details.openingTimes.close}
           </p></div>
         </div>
 
         {/* Main Content */}
-        <div className="detail-content">
+         <div className="detail-content">
           <div className="opening-services-container">
             {/* Left: Opening hours */}
             <section className="opening-times-section">
@@ -189,7 +169,7 @@ const StoreDetailPage: React.FC = () => {
                     mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
                     thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday'
                   };
-                  const times = (displayData.openingTimes as any)?.[dayKey];
+                  const times = (details.openingTimes as any)?.[dayKey];
                   const format = (t?: string) => {
                     if (!t) return '';
                     const [h, m] = t.split(':'); let hr = parseInt(h, 10);
@@ -208,12 +188,13 @@ const StoreDetailPage: React.FC = () => {
               </ul>
             </section>
 
+
             {/* Services Section */}
             <div className="services-section">
               <h2>Services</h2>
               <ul className="services-list">
-                {displayData.services && displayData.services.length > 0 ? (
-                  displayData.services.map((service: any, index: number) => (
+                {details.services && details.services.length > 0 ? (
+                  details.services.map((service: any, index: number) => (
                     <li key={index} className="service-item">
                       <div className="service-content">
                         <div className="service-icon-badge">

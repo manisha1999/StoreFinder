@@ -30,16 +30,18 @@ export const storeCache = {
       const parsed: CachedStore = JSON.parse(cached);
       const age = Date.now() - parsed.timestamp;
       const ageSeconds = Math.round(age / 1000);
-
+      console.log("cachedData from StoreCache:", cached);
       // Check if cache is still valid (within 30 minutes)
       if (age < CACHE_DURATION) {
         console.log(`✅ Cache hit for store ${storeId} (age: ${ageSeconds}s)`);
-        return parsed.data;
+        return JSON.parse(cached);
       }
+      
 
       // Cache expired
       console.log(`⏰ Cache expired for store ${storeId}`);
       storeCache.remove(storeId);
+      
       return null;
     } catch (error) {
       console.error('Failed to get cached store:', error);

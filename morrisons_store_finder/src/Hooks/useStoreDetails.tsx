@@ -63,31 +63,21 @@ export function useStoreDetails(): UseStoreDetailsReturn {
 
     try {
       // ✅ Step 1: Check cache first
-      const cached = storeCache.get(storeIdString);
+       const cached = storeCache.get(storeIdString);
+      //  console.log('📦 Checking cache for store ID:', cached.data.services);
       if (cached) {
-        console.log(`✅ Cache HIT for store ${storeIdString}`);
-        console.log('📦 Cached data structure:', {
-          hasServices: !!cached.services,
-          servicesCount: cached.services?.length || 0,
-          hasDepartments: !!cached.departments,
-          departmentsCount: cached.departments?.length || 0,
-          keys: Object.keys(cached)
-        });
+        console.log('✅ Cache HIT for', storeIdString, cached);
+        console.log('👉 Cached services:', cached.data.services, 'Cached departments:', cached.data.departments);
+
+        setDetails(cached.data);
+        setIsFromCache(true);
+        setError(null);
         
-        // Check if cached data has services/departments
-        if (!cached.services || !cached.departments) {
-          console.log('⚠️ Cached data missing services/departments - will fetch fresh data');
-          storeCache.remove(storeIdString);
-        } else {
-          console.log('✅ Using cached data - API CALL SKIPPED ✨');
-          setDetails(cached);
-          setIsFromCache(true);
-          setLoading(false);
-          console.log(`========== FETCH DETAILS END (CACHED) ==========\n`);
-          return;
-        }
+        console.log(`========== FETCH DETAILS END (CACHE) ==========\n`);
+        return;
+        
       } else {
-        console.log(`❌ Cache MISS for store ${storeIdString}`);
+        console.log('❌ Cache MISS for', storeIdString);
       }
 
       // ✅ Step 2: No cache or incomplete cache, fetch from API
@@ -187,6 +177,7 @@ export function useStoreDetails(): UseStoreDetailsReturn {
     setLoading(false);
     setIsFromCache(false);
   }, []);
+  console.log("useStoreDetails state:", { details, loading, error, isFromCache });
 
   return { 
     details, 
