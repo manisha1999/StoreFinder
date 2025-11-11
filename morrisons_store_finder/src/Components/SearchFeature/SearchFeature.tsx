@@ -6,11 +6,8 @@ const MAX_SEARCH_LENGTH = 100;
 
 interface SearchFeatureProps {
   onSearch: (query: string, coordinates?: { lat: number; lng: number }) => void;
-  /** Optional: Called when an error occurs */
   onError?: (error: Error) => void;
-  /** Optional: Initial search value */
   initialValue?: string;
-  /** Optional: Disable the entire component */
   disabled?: boolean;
 }
 

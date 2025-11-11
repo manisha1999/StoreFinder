@@ -4,7 +4,7 @@ import './Screen2.css';
 import StoreMap from '../StoreMap/StoreMap';
 import Filter from '../Filters/Filter';
 import FilterModal from '../FilterModal/FilterModal';
-import useStoreDetails from '../../Hooks/useStoreDetails';
+
 import { storeCache } from '../StoreCache/StoreCache';
 
 interface Screen2Props {
@@ -104,7 +104,88 @@ export const Screen2: React.FC<Screen2Props> = ({
 
 
   ///. Applied Filters Logic 
-  
+  console.log("Applied Filters:", appliedFilters);
+
+  useEffect(() => {
+  filteredStores.forEach((store) => {
+    if (!detailsMap[store.id]) {
+      // Try to use storeCache first (localStorage-backed cache)
+      const cached = storeCache.get(String(store.id));
+      if (cached?.data) {
+        setDetailsMap((prev) => ({
+          ...prev,
+          [store.id]: cached.data,
+        }));
+      } else {
+        // Otherwise, fetch from API (adapt to your useStoreDetails/fetchDetails)
+        // API fetch example:
+        fetch(
+          `https://uat-api.morrisons.com/location/v2/stores/${encodeURIComponent(store.id)}?apikey=${process.env.REACT_APP_MORRISONS_API_KEY}&include=departments,services,linkedStores`
+        )
+          .then((res) => res.ok ? res.json() : null)
+          .then((data) => {
+            if (data) {
+              storeCache.set(String(store.id), data );
+              setDetailsMap((prev) => ({
+                ...prev,
+                [store.id]: data,
+              }));
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  });
+}, [filteredStores, detailsMap]);
+
+ 
+  const storesWithServicesDepartments = filteredStores.filter(store => {
+  const details = detailsMap[store.id];
+  // Only include stores with both services and departments arrays defined
+  return details && Array.isArray(details.services) && Array.isArray(details.departments);
+});
+console.log("Stores with services and departments:", storesWithServicesDepartments);
+
+ // ...existing code...
+const filteredStoresafterappliedfilters = useMemo(() => {
+  if (!appliedFilters || appliedFilters.length === 0) return filteredStores;
+
+  // Normalise and collapse spaces so "Rug Doctor" -> "rugdoctor" and "rugDoctor" -> "rugdoctor"
+  const normKey = (s: string) => normalize(String(s || '')).replace(/\s+/g, '');
+
+  const normFilters = appliedFilters.map(f => normKey(f));
+
+  return filteredStores.filter((store) => {
+    const details = detailsMap[store.id];
+    if (!details) return false;
+
+    // Ensure services/departments arrays exist
+    const services = Array.isArray(details.services) ? details.services : [];
+    const departments = Array.isArray(details.departments) ? details.departments : [];
+
+    // For each applied filter, require match in either services OR departments
+    return normFilters.every((filter) => {
+      const matchInServices = services.some((svc: any) => {
+        const n1 = normKey(svc.name || svc.serviceName || '');
+        return n1 === filter || n1.includes(filter);
+      });
+
+      const matchInDepartments = departments.some((dep: any) => {
+        const n2 = normKey(dep.name || dep.serviceName || '');
+        return n2 === filter || n2.includes(filter);
+      });
+
+      return matchInServices || matchInDepartments;
+    });
+  });
+}, [filteredStores, detailsMap, appliedFilters]);
+// ...existing code...
+console.log("Filtered stores after applied filters:", filteredStoresafterappliedfilters);
+
+
+
+
+
 
   // Loading state
   if (loading) {
@@ -218,16 +299,23 @@ export const Screen2: React.FC<Screen2Props> = ({
             </h2>
           </div>
 
+          
           <ul className="stores-grid">
-            {filteredStores.map((store: any) => (
-              <StoreCard key={store.id} store={store} />
-            ))}
-          </ul>
+  {filteredStoresafterappliedfilters.map((store: any) => (
+    <StoreCard key={store.id} store={store} />
+  ))}
+</ul>
+
+
         </aside>
 
         <section className="map-section">
-          <StoreMap 
+          {/* <StoreMap 
             stores={filteredStores || []}
+            center={searchCoordinates || undefined}
+          /> */}
+          <StoreMap 
+            stores={filteredStoresafterappliedfilters  || []}
             center={searchCoordinates || undefined}
           />
         </section>
