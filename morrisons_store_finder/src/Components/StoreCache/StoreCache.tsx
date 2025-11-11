@@ -8,14 +8,17 @@ const CACHE_KEY_PREFIX = 'store_cache_';
 
 export const storeCache = {
   // Save store to cache
+  
   set: (storeId: string, storeData: any): void => {
+    console.log("Storing store data to cache for storeId:", storeData);
     const cached: CachedStore = {
       data: storeData,
       timestamp: Date.now(),
     };
     try {
+
       localStorage.setItem(`${CACHE_KEY_PREFIX}${storeId}`, JSON.stringify(cached));
-      console.log(`✅ Cached store ${storeId}`);
+      console.log("Cached store data:", cached);
     } catch (error) {
       console.error('Failed to cache store:', error);
     }

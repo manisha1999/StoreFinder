@@ -129,6 +129,7 @@ const generateSlug = (storeName: string): string => {
 export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   const navigate = useNavigate();
   const { details,fetchDetails } = useStoreDetails();
+
   
   // Favorite state
   const storeId = String(store.name);
@@ -158,17 +159,12 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
     try {
       console.log('🔍 Fetching store details for:', storeId);
       
-      // Trigger API call first
+    //   // Trigger API call first
       const storeData = await fetchDetails(storeId);
-      console.log('✅ Fetched store details:', storeData);
+    
+    
+      storeCache.get(storeId);
       
-      // Cache the full store data for 30 minutes
-      // storeCache.set(storeId, storeData || store);
-     const dataToCache = details || store;
-      storeCache.set(storeId, dataToCache);
-      console.log('💾 Cached store data');
-      
-      // Then navigate with correct URL format: /storefinder/{id}/{store-name-slug}
       navigate(`/storefinder/${storeId}/${storeSlug}`);
     } catch (error) {
       console.error('❌ Error fetching store details:', error);
@@ -187,11 +183,11 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
     if (isFavorite) {
       favoritesService.remove(storeId);
       setIsFavorite(false);
-      console.log('🗑️ Removed from favorites:', storeId);
+  
     } else {
       favoritesService.add(store);
       setIsFavorite(true);
-      console.log('⭐ Added to favorites:', storeId);
+     
     }
 
     // Notify other components

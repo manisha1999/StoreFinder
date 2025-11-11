@@ -66,7 +66,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center }) => {
     });
 
     setMap(newMap);
-    console.log('✅ Map initialized at', defaultCenter);
+    
   }, [center, map]);
 
   // Add markers when map and stores are ready
@@ -223,12 +223,11 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center }) => {
       newMarkers.push(marker);
       bounds.extend(position);
 
-      console.log(`✅ Marker ${index + 1}/${stores.length}: ${store.storeName} at [${lat}, ${lng}]`);
+
     });
 
     setMarkers(newMarkers);
 
-    console.log(`✅ Created ${newMarkers.length} markers successfully`);
 
     // Fit map to show all markers
     if (newMarkers.length > 0) {

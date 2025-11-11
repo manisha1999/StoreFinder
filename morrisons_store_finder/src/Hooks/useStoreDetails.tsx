@@ -41,16 +41,14 @@ export function useStoreDetails(): UseStoreDetailsReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
-  
   // Track the latest request to prevent race conditions
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchDetails = useCallback(async (storeId: string | number) => {
     const storeIdString = String(storeId);
-    
     console.log(`\n🔍 ========== FETCH DETAILS START ==========`);
     console.log(`🔍 Store ID: ${storeIdString}`);
-    
+
     // Cancel any pending request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -63,24 +61,22 @@ export function useStoreDetails(): UseStoreDetailsReturn {
 
     try {
       // ✅ Step 1: Check cache first
-       const cached = storeCache.get(storeIdString);
-      //  console.log('📦 Checking cache for store ID:', cached.data.services);
+      // const cached = storeCache.get(storeIdString);
+      const cached = localStorage.getItem(`store_cache_${storeIdString}`) ? JSON.parse(localStorage.getItem(`store_cache_${storeIdString}`) || '') : null;
       if (cached) {
-        console.log('✅ Cache HIT for', storeIdString, cached);
+        console.log('✅ Cache HIT for', storeIdString);
         console.log('👉 Cached services:', cached.data.services, 'Cached departments:', cached.data.departments);
-
+        console.log("cachedData in useStoreDetails:", cached.data);
         setDetails(cached.data);
         setIsFromCache(true);
         setError(null);
-        
         console.log(`========== FETCH DETAILS END (CACHE) ==========\n`);
         return;
-        
       } else {
         console.log('❌ Cache MISS for', storeIdString);
       }
 
-      // ✅ Step 2: No cache or incomplete cache, fetch from API
+      // ✅ Step 2: No cache, fetch from API
       console.log('📡 Fetching from API...');
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
@@ -103,42 +99,18 @@ export function useStoreDetails(): UseStoreDetailsReturn {
       }
 
       const data = await response.json();
-      
-      console.log('✅ API response received');
-      console.log('📊 Response data structure:', {
-        hasServices: !!data.services,
-        servicesCount: data.services?.length || 0,
-        hasDepartments: !!data.departments,
-        departmentsCount: data.departments?.length || 0,
-        hasLinkedLocations: !!data.linkedLocations,
-        linkedLocationsCount: data.linkedLocations?.length || 0,
-        keys: Object.keys(data)
-      });
-      
-      // Log first few services/departments
-      if (data.services?.length > 0) {
-        console.log('📋 First 3 services:', data.services.slice(0, 3));
-      } else {
-        console.log('⚠️ No services in API response!');
-      }
-      
-      if (data.departments?.length > 0) {
-        console.log('🏢 Departments:', data.departments.map((d: any) => d.serviceName));
-      } else {
-        console.log('⚠️ No departments in API response!');
-      }
-      
-      // Only update state if this request wasn't aborted
-      if (!abortController.signal.aborted) {
-        // ✅ Step 3: Cache the API response
-        storeCache.set(storeIdString, data);
-        console.log(`💾 Cached store ${storeIdString} for 30 minutes`);
-        
-        setDetails(data);
-        setIsFromCache(false);
-        setError(null);
-      }
-      
+      console.log('📄 Response data received:', data);
+
+      // ✅ Store in cache for future use
+      storeCache.set(storeIdString,  data );
+      // localStorage.setItem(`store_cache_${storeIdString}`, JSON.stringify({ data, timestamp: Date.now() }));
+      console.log('💾 Cached store', storeIdString, 'data:', data);
+
+      setDetails(data);
+      setIsFromCache(false);
+      setError(null);
+
+      console.log('Fetched store details:', data);
       console.log(`========== FETCH DETAILS END (API) ==========\n`);
     } catch (e: any) {
       // Don't set error state if request was aborted
@@ -147,17 +119,15 @@ export function useStoreDetails(): UseStoreDetailsReturn {
         console.log(`========== FETCH DETAILS END (ABORTED) ==========\n`);
         return;
       }
-
       const errorMessage = e.message || "Error fetching store details";
       console.error('❌ Store details fetch error:', errorMessage);
       console.error('❌ Full error:', e);
-      
+
       if (abortControllerRef.current && !abortControllerRef.current.signal.aborted) {
         setError(errorMessage);
         setDetails(null);
         setIsFromCache(false);
       }
-      
       console.log(`========== FETCH DETAILS END (ERROR) ==========\n`);
     } finally {
       if (!abortControllerRef.current || !abortControllerRef.current.signal.aborted) {
@@ -177,15 +147,19 @@ export function useStoreDetails(): UseStoreDetailsReturn {
     setLoading(false);
     setIsFromCache(false);
   }, []);
-  console.log("useStoreDetails state:", { details, loading, error, isFromCache });
 
+  console.log('useStoreDetails state:', { details, loading, error, isFromCache });
   return { 
+
+   
     details, 
     loading, 
     error, 
     fetchDetails,
     clearDetails,
     isFromCache
+
+
   };
 }
 

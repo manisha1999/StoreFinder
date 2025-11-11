@@ -13,7 +13,7 @@ type DayOpeningHours = {
   close: string;
 };
 
-type OpeningTimes = {
+type openingTimes = {
   mon?: DayOpeningHours;
   tue?: DayOpeningHours;
   wed?: DayOpeningHours;

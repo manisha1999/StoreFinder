@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import logo from './logo.svg';
+
 
 const Home = lazy(() => import('./Components/Home/Home'));
 const StoreDetailPage = lazy(() => import('./Components/StoreDetails/StoreDetailPage'));
@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <img className='logo' src={logo} alt='logo'/>
+        
         <Suspense fallback={
           <div style={{ 
             display: 'flex', 
