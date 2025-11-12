@@ -4,8 +4,10 @@ import useStoreDetails from '../../Hooks/useStoreDetails';
 import { storeCache } from '../StoreCache/StoreCache';
 // import morrisonsLogo from '../../assets/morrisonsLogo.png';
 import { SiMorrisons } from "react-icons/si";
+import NavBar from '../NavBar/NavBar';
 
 import './StoreDetailsPage.css';
+import Footer from '../Footer/Footer';
 
 // Types
 type DayOpeningHours = {
@@ -78,6 +80,8 @@ const ClockIcon = () => (
   </svg>
 );
 
+ 
+
 const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
@@ -108,6 +112,17 @@ const StoreDetailPage: React.FC = () => {
 }, [storeId, fetchDetails, clearDetails, navigate]);
 
 
+const todayKey = DAY_ORDER[new Date().getDay()];
+  const todaysTimes = (details?.openingTimes as any)?.[todayKey] ?? null;
+   const formatTimeSafe = (t?: string) => {
+    if (!t) return '';
+    // reuse existing formatTime util if present otherwise fallback
+    try { return formatTime(t); } catch { return t; }
+  };
+
+  const openText = todaysTimes?.open ? formatTimeSafe(todaysTimes.open) : null;
+  const closeText = todaysTimes?.close ? formatTimeSafe(todaysTimes.close) : null;
+  const todayLabel = openText && closeText ? `${openText} - ${closeText}` : 'Closed';
 
 
   const MorrisonsIcon = SiMorrisons as React.ComponentType<{ className?: string }>;
@@ -144,8 +159,10 @@ const StoreDetailPage: React.FC = () => {
       </div>
     );
   }
-console.log('✅ Rendering store details:', details);
+console.log('✅ Rendering store details:', details.openingTimes);
   return (
+    <div>
+      <NavBar/>
     <div className="store-detail-page">
       <div className="store-detail-container">
         {/* Header with store name and opening time */}
@@ -153,8 +170,13 @@ console.log('✅ Rendering store details:', details);
           <div className="detail_store_header">Store Finder {'>'} {details.storeName}</div>
           <div><h1 className="store-title">{details.storeName}</h1></div>
           <div><p className="store-hours">
-            {details.openingTimes.open} - {details.openingTimes.close}
-          </p></div>
+           {openText && closeText ? (
+                <> Open Today {openText} - {closeText} </>
+              ) : (
+                <> Closed Today </>
+              )}
+            </p>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -214,6 +236,8 @@ console.log('✅ Rendering store details:', details);
           </div>
         </div>
       </div>
+    </div>
+    <Footer/>
     </div>
   );
 };
