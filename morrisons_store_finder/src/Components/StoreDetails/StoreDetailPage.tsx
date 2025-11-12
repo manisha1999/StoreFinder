@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
+import { storeCache } from '../StoreCache/StoreCache';
 // import morrisonsLogo from '../../assets/morrisonsLogo.png';
 import { SiMorrisons } from "react-icons/si";
 
@@ -12,12 +13,12 @@ type DayOpeningHours = {
   close: string;
 };
 
-type OpeningTimes = {
+type openingTimes = {
   mon?: DayOpeningHours;
   tue?: DayOpeningHours;
   wed?: DayOpeningHours;
   thu?: DayOpeningHours;
-  fri?: DayOpeningHours;
+  fri?: DayOpeningHours; 
   sat?: DayOpeningHours;
   sun?: DayOpeningHours;
 };
@@ -81,16 +82,34 @@ const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { details, loading, error, fetchDetails, clearDetails } = useStoreDetails();
+  console.log("details:", details);
 
   useEffect(() => {
-    if (storeId) {
-      fetchDetails(storeId);
-    }
+  if (!storeId) {
+    navigate('/');
+    return;
+  }
 
-    return () => {
-      clearDetails();
-    };
-  }, [storeId, fetchDetails, clearDetails]);
+  // Try to get from cache first
+  const cached = storeCache.get(storeId);
+  if (cached) {
+    console.log('✅ Using cached store data - API CALL SKIPPED');
+    console.log('📦 Cached data:', cached);
+    // Use cached data if your hook supports it
+  } else {
+    console.log('❌ No cache found - will fetch from API');
+  }
+
+  // Fetch details (will call API if not using cache)
+  console.log('📡 Calling fetchDetails...');
+  fetchDetails(storeId);
+
+  // ...existing code...
+}, [storeId, fetchDetails, clearDetails, navigate]);
+
+
+
+
   const MorrisonsIcon = SiMorrisons as React.ComponentType<{ className?: string }>;
 
   if (loading) {
@@ -125,7 +144,7 @@ const StoreDetailPage: React.FC = () => {
       </div>
     );
   }
-
+console.log('✅ Rendering store details:', details);
   return (
     <div className="store-detail-page">
       <div className="store-detail-container">

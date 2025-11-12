@@ -37,6 +37,10 @@
   font-weight: bold;
 }
 
+.store-hours{
+  color: white;
+}
+
 /* Main content styles */
 .detail-content {
   padding: 1.5rem;

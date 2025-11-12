@@ -80,6 +80,7 @@ const Filter: React.FC<FilterProps> = ({ defaultValue, onChange, onOpenModal }) 
       return next;
     });
   }, [onChange]);
+  console.log("Rendering Filter with filters:", filters);
 
   return (
     <div className="filter-bar">

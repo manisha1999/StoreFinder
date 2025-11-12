@@ -1,0 +1,180 @@
+/* Improved responsive navbar + mobile dropdown
+   - Dropdown becomes visible on focus-within or when parent gets .open (for JS toggle)
+   - Prevents clipping by overflow and ensures proper stacking
+*/
+
+.morrisons-navbar {
+  background: #f5f5f5;
+  border-bottom: 1.5px solid #ececec;
+  width: 100%;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  z-index: 1000;
+  position: sticky;
+  top: 0;
+}
+
+/* Container list */
+.navbar-list {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  list-style: none;
+  margin: 0;
+  padding: 0 24px;
+  align-items: center;
+  height: 60px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow: visible; /* allow dropdowns to escape */
+}
+
+/* Items */
+.navbar-list li {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+/* Links */
+.navbar-list a {
+  display: block;
+  text-decoration: none;
+  color: #222;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0 8px;
+  line-height: 60px;
+  transition: color .18s, background .12s;
+  border-radius: 4px;
+}
+
+.navbar-list a:hover,
+.navbar-list a:focus {
+  color: #005a1f;
+  text-decoration: none;
+  background: rgba(0,128,51,0.06);
+  outline: none;
+}
+
+/* More button wrapper (anchor for dropdown) */
+.navbar-more {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Mobile chevron button */
+.navbar-more-btn {
+  background: #fff;
+  border: 1px solid #bababa;
+  border-radius: 9px;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #222;
+}
+
+/* Dropdown panel (hidden by default) */
+.navbar-dropdown {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  min-width: 220px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  z-index: 1100;
+  margin: 0;
+  padding: 6px 0;
+}
+
+/* Show dropdown when parent gains focus or .open is toggled by JS */
+.navbar-more:focus-within .navbar-dropdown,
+.navbar-more.open .navbar-dropdown {
+  display: block;
+}
+
+/* Dropdown items */
+.navbar-dropdown li {
+  width: 100%;
+  list-style: none;
+}
+
+.navbar-dropdown a {
+  display: block;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  color: #222;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.navbar-dropdown a:hover,
+.navbar-dropdown a:focus {
+  background: #f2f6ef;
+  color: #578028;
+  text-decoration: none;
+  outline: none;
+}
+
+/* Accessibility: focus outline */
+.navbar-dropdown a:focus {
+  box-shadow: 0 0 0 3px rgba(87,128,40,0.12);
+  border-radius: 6px;
+}
+
+/* Desktop vs Mobile helpers */
+.desktop-only { display: flex; }
+.mobile-only { display: none; }
+
+/* MOBILE: show compact nav, allow overflow scroll, show "more" button */
+@media (max-width: 900px) {
+  .desktop-only { display: none !important; }
+  .mobile-only {
+    display: flex !important;
+    gap: 12px;
+    padding: 0 8px;
+    height: 54px;
+    align-items: center;
+  }
+
+  .navbar-list {
+    gap: 8px;
+    padding: 0 8px;
+    height: 54px;
+    font-size: 0.98rem;
+    overflow-x: auto; /* allow horizontal scroll */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .navbar-list a {
+    line-height: 54px;
+    font-size: 0.96rem;
+    padding: 0 6px;
+  }
+
+  /* Keep more button visible on mobile */
+  .navbar-more {
+    margin-left: 6px;
+  }
+}
+
+/* Very small devices: slightly smaller padding */
+@media (max-width: 420px) {
+  .navbar-list a { padding: 0 4px; font-size: 0.92rem; }
+  .navbar-dropdown { min-width: 190px; }
+}
+
+/* Utility to visually hide element for accessibility */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: visible;
+  clip: rect(1px,1px,1px,1px);
+  white-space: nowrap;
+}

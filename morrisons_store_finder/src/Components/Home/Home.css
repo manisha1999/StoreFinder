@@ -1,14 +1,36 @@
-
-
+/* Keep existing styles */
 .main{
     height: 400px;
     background-image: linear-gradient(90deg, #004e37, #00893f);
-
-}
-
-.main_section{
-    margin-left: auto;
-    margin-right: auto;
 }
 
 
+.logo{
+  height: 3rem;
+  width: 132px;
+}
+
+/* Accessibility helper (keeps heading for screen readers only) */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Optional structure classes for semantics (minimal impact to UI) */
+.app-page {
+  display: block;
+  
+}
+
+.site-header,
+.site-main {
+  width: 100%;
+}
+
+/* Footer inside the section */
+.section-footer {
+  width: 100%;
+}
