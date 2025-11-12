@@ -200,6 +200,7 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
   }
 
   // Error state
+  // Error state
   if (error) {
     return (
       <div className="screen2-container">
@@ -210,6 +211,7 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
     );
   }
 
+  // No stores found
   // No stores found
   if (!stores || stores.length === 0) {
     return searchQuery ? (
@@ -291,10 +293,31 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
         />
       )}
       
+      <Filter
+        onOpenModal={() => setModalOpen(true)}
+        onChange={(filters) => {
+          setShowMorrisons(filters.morrisons);
+          setShowMorrisonsDaily(filters.morrisonsDaily);
+        }}
+        defaultValue={{
+          morrisons: showMorrisons,
+          morrisonsDaily: showMorrisonsDaily
+        }}
+      />
+
+      {modalOpen && (
+        <FilterModal
+          appliedFilters={appliedFilters}
+          onChange={setAppliedFilters}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+      
       <div className="screen2-split-layout">
         <aside className="stores-list-section">
           <div className="stores-header">
             <h2 className="results-title">
+              Nearby Stores <span className="store-count">({filteredStores.length})</span>
               Nearby Stores <span className="store-count">({filteredStores.length})</span>
             </h2>
           </div>
