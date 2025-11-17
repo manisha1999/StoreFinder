@@ -1,0 +1,20 @@
+.layout-root {
+  display: flex;
+  flex-direction: column;
+  min-height: fit-content;
+  width: 100%;
+}
+
+.layout-content {
+  flex: 1 0 auto;
+  width: 100%;
+  /* Optionally, add bottom padding equal to footer height if your footer is absolutely positioned */
+}
+
+/* Example footer style to ensure no overlap */
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  background: #fafafa;
+  border-top: 1px solid #ececec;
+}

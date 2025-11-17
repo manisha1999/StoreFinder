@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./NavBar.css";
 
-const NAV_LINKS = [
+const NAVLINKS = [
   { label: "Morrisons", href: "/" },
   { label: "Groceries", href: "/groceries" },
   { label: "Morrisons More", href: "/more" },
@@ -16,97 +16,203 @@ const NAV_LINKS = [
   { label: "Help Hub & FAQs", href: "/help-hub" },
 ];
 
-export function NavBar() {
-  const VISIBLE_COUNT = 5; // number of links shown on mobile before "More"
-  const visibleLinks = NAV_LINKS.slice(0, VISIBLE_COUNT);
-  const overflowLinks = NAV_LINKS.slice(VISIBLE_COUNT);
+export const NavBar: React.FC = () => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState<number>(NAVLINKS.length);
+  const navRef = useRef<HTMLUListElement | null>(null);
+  const itemRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const moreRef = useRef<HTMLLIElement | null>(null);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const menuRef = useRef<HTMLUListElement | null>(null);
 
-  const [open, setOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement | null>(null);
-
+  // Calculate visibleCount based on available width (reserve for "More")
   useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (!moreRef.current) return;
-      if (!moreRef.current.contains(e.target as Node)) {
-        setOpen(false);
+    const calculate = () => {
+      if (!navRef.current) return;
+      const navWidth = navRef.current.offsetWidth;
+      let used = 0;
+      let count = 0;
+      const reserve = 72; // reserve space for More button
+      for (let i = 0; i < NAVLINKS.length; i++) {
+        const li = itemRefs.current[i];
+        const w = li ? li.offsetWidth : 110;
+        used += w + 12;
+        if (used < navWidth - reserve) count++;
+        else break;
       }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("click", onDocClick);
+      setVisibleCount(Math.max(1, Math.min(NAVLINKS.length, count || 1)));
+    };
+
+    const rafId = requestAnimationFrame(calculate);
+    window.addEventListener("resize", calculate);
+    window.addEventListener("load", calculate);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", calculate);
+      window.removeEventListener("load", calculate);
+    };
+  }, []);
+
+  const visibleLinks = NAVLINKS.slice(0, visibleCount);
+  const overflowLinks = NAVLINKS.slice(visibleCount);
+
+  // Close dropdown on outside click or ESC
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setDropdownOpen(false);
+        moreButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onKey);
     };
   }, []);
 
-  // close dropdown when a link inside it is clicked
-  const handleOverflowClick = () => setOpen(false);
+  // When opening the dropdown, focus first menu item if present
+  useEffect(() => {
+    if (dropdownOpen) {
+      const first = menuItemRefs.current && menuItemRefs.current.length > 0 ? menuItemRefs.current[0] : null;
+      first?.focus();
+    }
+  }, [dropdownOpen]);
+
+  // Button keyboard handler: open on Enter/Space/ArrowDown/ArrowUp
+  const onMoreButtonKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+      e.preventDefault();
+      setDropdownOpen(true);
+      // focus handled by effect
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setDropdownOpen(true);
+      // focus last item after open (guard empty)
+      setTimeout(() => {
+        const len = menuItemRefs.current ? menuItemRefs.current.length : 0;
+        if (len > 0) menuItemRefs.current[len - 1]?.focus();
+      }, 0);
+    }
+  };
+
+  // Menu keyboard handler: Arrow navigation, Home/End, Escape, Tab
+  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
+    const items = menuItemRefs.current || [];
+    const len = items.length;
+    if (len === 0) {
+      if (e.key === "Escape") {
+        setDropdownOpen(false);
+        moreButtonRef.current?.focus();
+      }
+      return;
+    }
+
+    const currentIndex = items.findIndex((el) => el === document.activeElement);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const next = (currentIndex + 1) % len;
+      items[next]?.focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const prev = (currentIndex - 1 + len) % len;
+      items[prev]?.focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      items[0]?.focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      items[len - 1]?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setDropdownOpen(false);
+      moreButtonRef.current?.focus();
+    } else if (e.key === "Tab") {
+      // allow tabbing out; close menu
+      setDropdownOpen(false);
+    }
+  };
 
   return (
-    <nav className="morrisons-navbar" role="navigation" aria-label="Primary">
-      <ul className="navbar-list">
-        {/* Desktop: show all links */}
-        {NAV_LINKS.map((link) => (
-          <li key={link.label} className="desktop-only">
-            <a href={link.href}>{link.label}</a>
-          </li>
-        ))}
+    <nav className="morrisons-navbar" aria-label="Main navigation">
+      <div className="navbar-scroll-wrapper">
+        <div className="navbar-scroll">
+          <ul className="navbar-list" ref={navRef}>
+            {visibleLinks.map((link, idx) => (
+              <li
+                key={link.label}
+                ref={(el) => {
+                  // assign without returning a value to satisfy TS ref type
+                  itemRefs.current[idx] = el;
+                }}
+              >
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))}
 
-        {/* Mobile: show a subset + "More" dropdown */}
-        {visibleLinks.map((link) => (
-          <li key={link.label} className="mobile-only">
-            <a href={link.href}>{link.label}</a>
-          </li>
-        ))}
-
-        <li
-          className={`navbar-more mobile-only ${open ? "open" : ""}`}
-          ref={moreRef as any}
-          aria-hidden={overflowLinks.length === 0}
-        >
-          <button
-            type="button"
-            className="navbar-more-btn"
-            aria-haspopup="true"
-            aria-expanded={open}
-            aria-controls="nav-more-dropdown"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen((s) => !s);
-            }}
-            title="More"
-          >
-        More
-            <span className="visually-hidden">More navigation items</span>
-          </button>
-
-          {overflowLinks.length > 0 && (
-            <ul
-              id="nav-more-dropdown"
-              className="navbar-dropdown"
-              role="menu"
-              aria-label="More navigation"
+            <li
+              className={`navbar-more${overflowLinks.length > 0 ? " shown" : ""}${dropdownOpen ? " open" : ""}`}
+              ref={moreRef}
+              aria-hidden={overflowLinks.length === 0}
             >
-              {overflowLinks.map((link) => (
-                <li key={link.label} role="none">
-                  <a
-                    role="menuitem"
-                    href={link.href}
-                    onClick={handleOverflowClick}
+              {overflowLinks.length > 0 && (
+                <>
+                  <button
+                    id="nav-more-btn"
+                    ref={moreButtonRef}
+                    className="navbar-more-btn"
+                    title="More navigation"
+                    aria-haspopup="true"
+                    aria-expanded={dropdownOpen}
+                    aria-controls="nav-more-dropdown"
+                    onClick={() => setDropdownOpen((o) => !o)}
+                    onKeyDown={onMoreButtonKeyDown}
                   >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </li>
-      </ul>
+                    ⋯
+                    <span className="visually-hidden">More navigation items</span>
+                  </button>
+
+                  <ul
+                    id="nav-more-dropdown"
+                    ref={menuRef}
+                    className="navbar-dropdown"
+                    role="menu"
+                    aria-label="More navigation"
+                    aria-hidden={!dropdownOpen}
+                    onKeyDown={onMenuKeyDown}
+                  >
+                    {overflowLinks.map((link, i) => (
+                      <li key={link.label} role="none">
+                        <a
+                          role="menuitem"
+                          tabIndex={dropdownOpen ? 0 : -1}
+                          href={link.href}
+                          ref={(el) => {
+                            // assign without returning a value
+                            menuItemRefs.current[i] = el;
+                          }}
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
   );
-}
+};
 
 export default NavBar;

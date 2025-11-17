@@ -128,9 +128,8 @@ const generateSlug = (storeName: string): string => {
 
 export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   const navigate = useNavigate();
-  const { details,fetchDetails } = useStoreDetails();
+  const { details, fetchDetails } = useStoreDetails();
 
-  
   // Favorite state
   const storeId = String(store.name);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -155,24 +154,18 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   const distanceText = useMemo(() => formatDistanceMiles(store.distance), [store.distance]);
   const storeSlug = useMemo(() => generateSlug(store.storeName), [store.storeName]);
 
+  const addressId = `store-${storeId}-address`;
+
   const handleCardClick = async () => {
     try {
-      console.log('🔍 Fetching store details for:', storeId);
-      
-    //   // Trigger API call first
-      const storeData = await fetchDetails(storeId);
-    
-    
+      // Trigger API call first (if hook supports it)
+      await fetchDetails(storeId);
+      // ensure we have something cached
       storeCache.get(storeId);
-      
       navigate(`/storefinder/${storeId}/${storeSlug}`);
     } catch (error) {
-      console.error('❌ Error fetching store details:', error);
-      
-      // Cache whatever data we have (from the store list)
+      // fallback behaviour: cache list data and navigate
       storeCache.set(storeId, store);
-      
-      // Still navigate even if API fails (detail page will handle the error)
       navigate(`/storefinder/${storeId}/${storeSlug}`);
     }
   };
@@ -183,11 +176,9 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
     if (isFavorite) {
       favoritesService.remove(storeId);
       setIsFavorite(false);
-  
     } else {
       favoritesService.add(store);
       setIsFavorite(true);
-     
     }
 
     // Notify other components
@@ -208,28 +199,36 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`View details for ${store.storeName}, ${distanceText} miles away`}
+      aria-label={`Open details for ${store.storeName}`}
+      aria-describedby={addressId}
     >
       <div className="store-card-header">
         <h3 className="store-name">{store.storeName}</h3>
+
         <div className="store-card-actions">
           <button
             className={`favorite-icon ${isFavorite ? 'active' : ''}`}
             onClick={handleToggleFavorite}
-            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={isFavorite ? 'Remove from favourites' : 'Add to favourites'}
+            aria-pressed={isFavorite}
+            title={isFavorite ? 'Remove from favourites' : 'Add to favourites'}
           >
-            {isFavorite ? '⭐' : '☆'}
+            <span aria-hidden>{isFavorite ? '★' : '☆'}</span>
           </button>
-          <span className="store-distance" aria-label={`${distanceText} miles away`}>
-            {distanceText} miles
-          </span>
+
+          <div className="distance-block" aria-hidden={false}>
+            <span className="store-distance" aria-label={`${distanceText} miles away`}>
+              {distanceText} miles
+            </span>
+          </div>
         </div>
       </div>
+
       <div className="store-card-body">
-        <p className="store-address">
+        <p id={addressId} className="store-address">
           {addressText}
         </p>
+        {/* <p>{store}</p> */}
         <p className={`store-hours ${storeStatus.isOpen ? 'open' : 'closed'}`}>
           <span className="status-text">{storeStatus.displayText}</span>
         </p>

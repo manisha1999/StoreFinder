@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import StoreCard from '../StoreCard/StoreCard';
 import './Screen2.css';
 import StoreMap from '../StoreMap/StoreMap';
@@ -6,6 +7,11 @@ import Filter from '../Filters/Filter';
 import FilterModal from '../FilterModal/FilterModal';
 
 import { storeCache } from '../StoreCache/StoreCache';
+
+export interface LatLng {
+  latitude: number;
+  longitude: number;
+}
 
 interface Screen2Props {
   stores: any[];
@@ -15,6 +21,26 @@ interface Screen2Props {
   searchCoordinates?: { lat: number; lng: number } | null;
 }
 
+export interface Department {
+  name: string;
+  serviceName?: string;
+  [key: string]: unknown;
+}
+
+export interface ServiceItem {
+  name: string;
+  serviceName?: string;
+  [key: string]: unknown;
+}
+
+export interface LinkedLocationSummary {
+  name?: number | string;
+  storeName?: string;
+  storeFormat?: string;
+  category?: string;
+  location?: LatLng;
+  [key: string]: unknown;
+}
 
 export interface StoreDetails {
   id: string | number;
@@ -22,10 +48,10 @@ export interface StoreDetails {
   storeName: string;
   address?: any;
   openingTimes?: any;
-  departments?: any[];
-  services?: any[];
-  linkedStores?: any[];
-  linkedLocations?: any[];
+  departments?: Department[];
+  services?: ServiceItem[];
+  linkedStores?: LinkedLocationSummary[];  
+  linkedLocations?: LinkedLocationSummary[];
   [key: string]: any;
 }
 
@@ -53,6 +79,30 @@ const isMorrisonsDaily = (store: any): boolean => {
 const isMorrisons = (store: any): boolean =>
   store?.category === 'Supermarket' && !isMorrisonsDaily(store);
 
+// new helper: extract a reasonable city/locality name from a store object
+const getCityFromStore = (store: any): string | null => {
+  if (!store) return null;
+  const candidates: Array<string | undefined | null> = [
+    store.city,
+    store.town,
+    store.locality,
+    store.postTown,
+    store.county,
+    store.address?.city,
+    store.address?.town,
+    store.address?.locality,
+    store.address?.suburb,
+    store.location?.city,
+    store.storeName,
+  ];
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.trim().length > 0) {
+      return c.trim();
+    }
+  }
+  return null;
+};
+
 export const Screen2: React.FC<Screen2Props> = ({ 
   stores, 
   loading, 
@@ -60,6 +110,23 @@ export const Screen2: React.FC<Screen2Props> = ({
   searchQuery, 
   searchCoordinates
 }) => {
+  // read URL params / query as fallback if parent didn't pass props
+  const params = useParams<{ postcode?: string }>();
+  const location = useLocation();
+
+  const urlPostcode = params.postcode ? decodeURIComponent(params.postcode) : null;
+  const qs = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const urlLat = qs.get('lat');
+  const urlLng = qs.get('lng');
+  const urlCoords = (urlLat && urlLng && !Number.isNaN(Number(urlLat)) && !Number.isNaN(Number(urlLng)))
+    ? { lat: Number(urlLat), lng: Number(urlLng) }
+    : null;
+
+  // effective values: prefer props, otherwise use URL values
+  const effectiveSearchQuery = searchQuery ?? urlPostcode ?? null;
+  const effectiveSearchCoordinates = searchCoordinates ?? urlCoords ?? null;
+
+  
   const [modalOpen, setModalOpen] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [showMorrisons, setShowMorrisons] = useState(false);
@@ -101,98 +168,77 @@ export const Screen2: React.FC<Screen2Props> = ({
 
   const hasActiveFilters = showMorrisons || showMorrisonsDaily;
 
-
-
-  ///. Applied Filters Logic 
-  console.log("Applied Filters:", appliedFilters);
-
   useEffect(() => {
-  filteredStores.forEach((store) => {
-    if (!detailsMap[store.id]) {
-      // Try to use storeCache first (localStorage-backed cache)
-      const cached = storeCache.get(String(store.id));
-      if (cached?.data) {
-        setDetailsMap((prev) => ({
-          ...prev,
-          [store.id]: cached.data,
-        }));
-      } else {
-        // Otherwise, fetch from API (adapt to your useStoreDetails/fetchDetails)
-        // API fetch example:
-        fetch(
-          `https://uat-api.morrisons.com/location/v2/stores/${encodeURIComponent(store.id)}?apikey=${process.env.REACT_APP_MORRISONS_API_KEY}&include=departments,services,linkedStores`
-        )
-          .then((res) => res.ok ? res.json() : null)
-          .then((data) => {
-            if (data) {
-              storeCache.set(String(store.id), data );
-              setDetailsMap((prev) => ({
-                ...prev,
-                [store.id]: data,
-              }));
-            }
-          })
-          .catch(() => {});
+    filteredStores.forEach((store) => {
+      if (!detailsMap[store.id]) {
+        const cached = storeCache.get(String(store.id));
+        if (cached?.data) {
+          setDetailsMap((prev) => ({
+            ...prev,
+            [store.id]: cached.data,
+          }));
+        } else {
+          fetch(
+            `https://uat-api.morrisons.com/location/v2/stores/${encodeURIComponent(store.id)}?apikey=${process.env.REACT_APP_MORRISONS_API_KEY}&include=departments,services,linkedStores`
+          )
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              if (data) {
+                storeCache.set(String(store.id), data);
+                setDetailsMap((prev) => ({
+                  ...prev,
+                  [store.id]: data,
+                }));
+              }
+            })
+            .catch(() => {});
+        }
       }
-    }
-  });
-}, [filteredStores, detailsMap]);
-
- 
-  const storesWithServicesDepartments = filteredStores.filter(store => {
-  const details = detailsMap[store.id];
-  // Only include stores with both services and departments arrays defined
-  return details && Array.isArray(details.services) && Array.isArray(details.departments);
-});
-console.log("Stores with services and departments:", storesWithServicesDepartments);
-
- // ...existing code...
-const filteredStoresafterappliedfilters = useMemo(() => {
-  if (!appliedFilters || appliedFilters.length === 0) return filteredStores;
-
-  // Normalise and collapse spaces so "Rug Doctor" -> "rugdoctor" and "rugDoctor" -> "rugdoctor"
-  const normKey = (s: string) => normalize(String(s || '')).replace(/\s+/g, '');
-
-  const normFilters = appliedFilters.map(f => normKey(f));
-
-  return filteredStores.filter((store) => {
-    const details = detailsMap[store.id];
-    if (!details) return false;
-
-    // Ensure services/departments arrays exist
-    const services = Array.isArray(details.services) ? details.services : [];
-    const departments = Array.isArray(details.departments) ? details.departments : [];
-
-    // For each applied filter, require match in either services OR departments
-    return normFilters.every((filter) => {
-      const matchInServices = services.some((svc: any) => {
-        const n1 = normKey(svc.name || svc.serviceName || '');
-        return n1 === filter || n1.includes(filter);
-      });
-
-      const matchInDepartments = departments.some((dep: any) => {
-        const n2 = normKey(dep.name || dep.serviceName || '');
-        return n2 === filter || n2.includes(filter);
-      });
-
-      return matchInServices || matchInDepartments;
     });
+  }, [filteredStores, detailsMap]);
+
+  const storesWithServicesDepartments = filteredStores.filter((store) => {
+    const details = detailsMap[store.id];
+    return details && Array.isArray(details.services) && Array.isArray(details.departments);
   });
-}, [filteredStores, detailsMap, appliedFilters]);
-// ...existing code...
-console.log("Filtered stores after applied filters:", filteredStoresafterappliedfilters);
+  console.log('Stores with services/departments:', storesWithServicesDepartments.length);
 
+  const filteredStoresafterappliedfilters = useMemo(() => {
+    if (!appliedFilters || appliedFilters.length === 0) return filteredStores;
+    const normKey = (s: string) => normalize(String(s || '')).replace(/\s+/g, '');
+    const normFilters = appliedFilters.map((f) => normKey(f));
+    return filteredStores.filter((store) => {
+      const details = detailsMap[store.id];
+      if (!details) return false;
+      const services = Array.isArray(details.services) ? details.services : [];
+      const departments = Array.isArray(details.departments) ? details.departments : [];
+      return normFilters.every((filter) => {
+        const matchInServices = services.some((svc: any) => {
+          const n1 = normKey(svc.name || svc.serviceName || '');
+          return n1 === filter || n1.includes(filter);
+        });
+        const matchInDepartments = departments.some((dep: any) => {
+          const n2 = normKey(dep.name || dep.serviceName || '');
+          return n2 === filter || n2.includes(filter);
+        });
+        return matchInServices || matchInDepartments;
+      });
+    });
+  }, [filteredStores, detailsMap, appliedFilters]);
 
-
-
-
+  // compute nearest city/locality from the nearest store in filteredStores
+  const nearestCity = useMemo(() => {
+    if (!filteredStores || filteredStores.length === 0) return null;
+    const nearest = filteredStores[0]; // filteredStores already sorted by distance
+    return getCityFromStore(nearest);
+  }, [filteredStores]);
 
   // Loading state
   if (loading) {
     return (
       <div className="screen2-container">
         <div className="loading-spinner">
-          <div className="spinner"></div>
+          <div className="spinner" />
           <p>Loading stores...</p>
         </div>
       </div>
@@ -212,11 +258,11 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
 
   // No stores found
   if (!stores || stores.length === 0) {
-    return searchQuery ? (
+    return effectiveSearchQuery ? (
       <div className="screen2-container">
         <div className="no-results">
           <h2>No stores found</h2>
-          <p>No stores found for "{searchQuery}"</p>
+          <p>No stores found for "{effectiveSearchQuery}"</p>
           <p className="suggestion">Try searching with a different postcode or location.</p>
         </div>
       </div>
@@ -235,7 +281,7 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
           }}
           defaultValue={{
             morrisons: showMorrisons,
-            morrisonsDaily: showMorrisonsDaily
+            morrisonsDaily: showMorrisonsDaily,
           }}
         />
 
@@ -254,19 +300,11 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
         </div>
 
         {modalOpen && (
-          <FilterModal
-            appliedFilters={appliedFilters}
-            onChange={setAppliedFilters}
-            onClose={() => setModalOpen(false)}
-          />
+          <FilterModal appliedFilters={appliedFilters} onChange={setAppliedFilters} onClose={() => setModalOpen(false)} />
         )}
       </div>
     );
   }
-
- 
-
-
 
   // Stores found - show filter and results
   return (
@@ -279,47 +317,78 @@ console.log("Filtered stores after applied filters:", filteredStoresafterapplied
         }}
         defaultValue={{
           morrisons: showMorrisons,
-          morrisonsDaily: showMorrisonsDaily
+          morrisonsDaily: showMorrisonsDaily,
         }}
       />
 
       {modalOpen && (
-        <FilterModal
-          appliedFilters={appliedFilters}
-          onChange={setAppliedFilters}
-          onClose={() => setModalOpen(false)}
-        />
+        <FilterModal appliedFilters={appliedFilters} onChange={setAppliedFilters} onClose={() => setModalOpen(false)} />
       )}
-      
-      <div className="screen2-split-layout">
+
+      {/* <div className="screen2-split-layout">
         <aside className="stores-list-section">
           <div className="stores-header">
             <h2 className="results-title">
-              Nearby Stores <span className="store-count">({filteredStores.length})</span>
+              {effectiveSearchQuery ? (
+                <span>Search Results for <span className="nearest-city">{effectiveSearchQuery}</span></span>
+              ) : nearestCity ? (
+                <span>Search Results for <span className="nearest-city">{nearestCity}</span></span>
+              ) : (
+                <span>Nearby Stores</span>
+              )}
             </h2>
           </div>
 
-          
-          <ul className="stores-grid">
-  {filteredStoresafterappliedfilters.map((store: any) => (
-    <StoreCard key={store.id} store={store} />
-  ))}
-</ul>
-
-
+             <ul className="stores-grid">
+            {filteredStoresafterappliedfilters.map((store: any) => (
+              <StoreCard key={store.id} store={store} />
+            ))}
+          </ul>
         </aside>
 
-        <section className="map-section">
-          {/* <StoreMap 
-            stores={filteredStores || []}
-            center={searchCoordinates || undefined}
-          /> */}
-          <StoreMap 
-            stores={filteredStoresafterappliedfilters  || []}
-            center={searchCoordinates || undefined}
-          />
+        <section className="map-section" aria-label="Store map">
+            {filteredStoresafterappliedfilters.length > 0 && (
+              <StoreMap
+                stores={filteredStoresafterappliedfilters}
+                center={effectiveSearchCoordinates || undefined}
+              />
+            )}
         </section>
+      </div> */}
+      {filteredStoresafterappliedfilters.length > 0 ? (
+  <div className="screen2-split-layout">
+    <aside className="stores-list-section">
+      <div className="stores-header">
+        <h2 className="results-title">
+          {effectiveSearchQuery ? (
+            <span>Search Results for <span className="nearest-city">{effectiveSearchQuery}</span></span>
+          ) : nearestCity ? (
+            <span>Search Results for <span className="nearest-city">{nearestCity}</span></span>
+          ) : (
+            <span>Nearby Stores</span>
+          )}
+        </h2>
       </div>
+      <ul className="stores-grid">
+        {filteredStoresafterappliedfilters.map((store: any) => (
+          <StoreCard key={store.id} store={store} />
+        ))}
+      </ul>
+    </aside>
+    <section className="map-section" aria-label="Store map">
+      <StoreMap
+        stores={filteredStoresafterappliedfilters}
+        center={effectiveSearchCoordinates || undefined}
+      />
+    </section>
+  </div>
+) : (
+  <div className="no-results">
+    <h2>No stores to display</h2>
+    <p>Please try a different postcode or location.</p>
+  </div>
+)}
+
     </div>
   );
 };

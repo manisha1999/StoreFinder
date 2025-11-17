@@ -266,16 +266,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center }) => {
     <div className="store-map-container">
       <div ref={mapRef} className="map-canvas" />
       
-      {/* Store count badge */}
-      {stores.length > 0 && (
-        <div className="map-overlay">
-          <div className="store-count-badge">
-            📍 {stores.length} {stores.length === 1 ? 'store' : 'stores'}
-          </div>
-        </div>
-      )}
-      
-      {/* No stores message */}
       {stores.length === 0 && (
         <div className="map-no-stores">
           <p>No stores to display on map</p>

@@ -187,3 +187,108 @@
   border-radius: 4px;
   font-size: 0.9rem;
 }
+
+/* ...existing code... */
+
+/* Responsive overrides: keep services CSS intact, stack all sections into rows on small screens */
+
+/* Make header flexible on smaller viewports */
+@media (max-width: 900px) {
+  .detail-header {
+    height: auto;               /* remove fixed height so header can grow */
+    padding: 1rem 1rem;         /* tighter padding */
+    align-items: flex-start;    /* allow title/controls to stack */
+  }
+
+  .detail-content {
+    padding: 1rem;
+  }
+
+  /* Stack the main columns vertically (rows) */
+  .opening-services-container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  /* Opening times becomes full width row */
+  .opening-times-section {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    order: 1;
+  }
+
+  /* Services section becomes full width below opening times */
+  .services-section {
+    width: 100%;
+    margin: 0;
+    order: 2;
+  }
+
+  /* Slightly reduce spacing inside opening times rows */
+  .opening-time-item {
+    padding: 0.4rem 0;
+  }
+
+  /* Keep service tiles same but reduce gap so they fit better */
+  .services-list {
+    gap: 1rem;
+  }
+}
+
+/* Small phones: further tighten paddings and font sizes */
+@media (max-width: 480px) {
+  .store-detail-page {
+    padding: 0.6rem;
+  }
+
+  .store-detail-container {
+    border-radius: 6px;
+  }
+
+  .detail-header {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .store-title {
+    font-size: 1.15rem;
+  }
+
+  .store-hours {
+    font-size: 0.88rem;
+  }
+
+  .detail-content {
+    padding: 0.75rem;
+  }
+
+  .opening-times-section {
+    padding: 0 0.3rem;
+  }
+
+  .opening-time-item {
+    padding: 0.35rem 0;
+  }
+
+  /* Keep services visuals identical; just ensure grid fits narrow screen */
+  .services-list {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .service-item {
+    padding: 0.45rem;
+    min-height: 48px;
+  }
+}
+
+/* Very narrow / landscape phones: reduce gaps to avoid horizontal scroll */
+@media (max-width: 360px) {
+  .opening-services-container { gap: 0.6rem; }
+  .services-list { gap: 0.5rem; }
+  .service-content { gap: 0.5rem; }
+  .service-name { font-size: 0.88rem; }
+}
+
+/* ...existing code... */

@@ -1,79 +1,106 @@
-.search_section {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    width: 100%;
-    /* align-items: flex-start; */
-    max-width: 1000px;
-    margin-left:  auto;
-    margin-right: auto;
-    height:fit-content
-  }
-  
-  .heading {
-    text-align: left;
-    width: 100%;
-    color: #fff;
-  }
-  
-  .input_section {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .input_container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 700px;
-    height: 90px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 0 16px;
-    background: #fff;
-    
-  }
-  
-  .input_button {
-    padding: 12px 50px 12px 44px;
-    flex: 1;
-    height: 100%;
-    border: none;
-    outline: none;
-    font-size: 22px;
-    background: transparent;
-    
-  }
-  
-  .icon {
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    fill: #008033;;
-    cursor: pointer;
-  }
-  
-  .search_button {
-    width: 150px;
-    height: 90px;
-    font-size: 20px;
-    background-color: #fabb00;
-    border: none;
-    border-radius: 12px;
-    color: #004b23; 
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .search_button:active,
-  .search_button.clicked {
-    background-color: #008033; 
-    color: white;
-  }
+/* ...existing code... */
+/* Responsive updates: input scales, buttons stack on small screens, generous gutters */
 
-  .current-location-badge {
+/* Layout container */
+.search_section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1100px;           /* allow wider on large screens */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px 16px;         /* page gutters for small screens */
+  box-sizing: border-box;
+}
+
+/* Headings */
+.heading {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: left;
+  width: 100%;
+  color: white;             /* readable dark green */
+  margin: 0;
+}
+.heading h1 { margin: 0 0 6px; font-size: 1.6rem; }
+.heading p { margin: 0; color: white; }
+
+/* Input row */
+.input_section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Input container holds icon, input and location button */
+.input_container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 760px; /* desktop input width */
+  height: 90px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 0 16px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* Input field */
+.input_button {
+  padding: 12px 50px 12px 44px;
+  flex: 1 1 auto;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 22px;
+  background: transparent;
+  box-sizing: border-box;
+  min-width: 0;
+  color: #222;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Left icon inside input */
+.icon {
+  position: absolute;
+  left: 16px;
+  width: 28px;
+  height: 28px;
+  fill: #008033;
+  cursor: pointer;
+}
+
+/* Search button */
+.search_button {
+  height: 90px;
+  min-width: 140px;
+  padding: 0 28px;
+  font-size: 20px;
+  background-color: #fabb00;
+  border: none;
+  border-radius: 12px;
+  color: #004b23;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.08s ease;
+  box-sizing: border-box;
+}
+
+/* active state */
+.search_button:active,
+.search_button.clicked {
+  background-color: #008033;
+  color: white;
+}
+
+/* Location badge (right inside input) */
+.current-location-badge {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -86,49 +113,281 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   width: 36px;
   height: 36px;
   z-index: 2;
 }
+.current-location-badge:hover { transform: translateY(-50%) scale(1.03); background: #f0f7f4; }
+.current-location-badge:active { transform: translateY(-50%) scale(0.98); background: #e1f0e8; }
+.current-location-badge:focus { outline: 3px solid rgba(0,128,51,0.18); outline-offset: 2px; }
+.current-location-badge:disabled { cursor: not-allowed; opacity: 0.45; }
 
-.current-location-badge:hover {
-  background: #f0f7f4;
-  transform: translateY(-50%) scale(1.05);
+/* Location icon */
+.current-location-icon { width: 24px; height: 24px; color: #008033; display: block; }
+.current-location-icon.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Error banner */
+.validation-error {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #ffefef;
+  border: 1px solid #f5c2c2;
+  color: #7a1414;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.error-icon { width: 20px; height: 20px; fill: currentColor; }
+.error-close { margin-left: auto; background: transparent; border: none; cursor: pointer; font-size: 16px; }
+
+/* Hints */
+.input-hint { margin: 0; font-size: 0.95rem; color: #666; }
+.input-hint.warning { color: #7a4f00; }
+.input-hint.success { color: #fff; }
+.input-hint.disabled { color: #999; }
+
+/* --- Responsive breakpoints --- */
+
+/* Medium screens: reduce heights, make search button slightly smaller */
+@media (max-width: 900px) {
+  .search_section { max-width: 900px; padding: 20px 14px; gap: 18px; }
+  .input_container { height: 70px; max-width: 100%; padding: 0 12px; border-radius: 10px; }
+  .input_button { font-size: 18px; padding-left: 40px; padding-right: 44px; }
+  .icon { width: 22px; height: 22px; left: 12px; }
+  .search_button { height: 70px; min-width: 120px; font-size: 18px; padding: 0 20px; border-radius: 10px; }
+  .current-location-badge { width: 34px; height: 34px; right: 6px; }
 }
 
-.current-location-badge:active {
-  background: #e1f0e8;
-  transform: translateY(-50%) scale(0.98);
-}
-
-.current-location-badge:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-
-.current-location-badge:focus {
-  outline: 2px solid #008033;
-  outline-offset: 2px;
-}
-
-.current-location-icon {
-  width: 24px;
-  height: 24px;
-  color: #008033;
-  display: block;
-}
-
-.current-location-icon.spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+/* Small screens: stack input and button vertically, full-width controls, larger tap targets */
+@media (max-width: 600px) {
+  .search_section { padding: 16px 12px; gap: 14px; }
+  .input_section { flex-direction: column; align-items: stretch; gap: 12px; }
+  .input_container { height: 56px; padding: 0 12px; border-radius: 10px; }
+  .input_button { font-size: 16px; padding-left: 40px; padding-right: 12px; height: 100%; }
+  .icon { left: 12px; width: 20px; height: 20px; }
+  .current-location-badge { width: 32px; height: 32px; right: 8px; top: 50%; }
+  .search_button {
+    height: 48px;
+    width: 100%;
+    min-width: 0;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 17px;
   }
-  to {
-    transform: rotate(360deg);
+}
+
+/* Very small screens: further reduce padding and font-size */
+@media (max-width: 420px) {
+  .heading h1 { font-size: 1.25rem; }
+  .input_button { font-size: 15px; }
+  .search_button { font-size: 16px; height: 46px; }
+}
+
+/* Ensure the input doesn't push out container when long content */
+.input_button::placeholder { color: #9a9a9a; opacity: 1; }
+
+/* Utility: visually-hidden (used in components) */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px,1px,1px,1px);
+  white-space: nowrap;
+}
+
+/* Layout container */
+.search_section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1100px;           /* allow wider on large screens */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px 16px;         /* page gutters for small screens */
+  box-sizing: border-box;
+}
+
+/* Headings */
+.heading {
+  text-align: left;
+  width: 100%;
+  color: white;             /* readable dark green */
+  margin: 0;
+}
+.heading h1 { margin: 0 0 6px; font-size: 1.6rem; }
+.heading p { margin: 0; color: white; }
+
+/* Input row */
+.input_section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Input container holds icon, input and location button */
+.input_container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 760px; /* desktop input width */
+  height: 90px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 0 16px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* Input field */
+.input_button {
+  padding: 12px 50px 12px 44px;
+  flex: 1 1 auto;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 22px;
+  background: transparent;
+  box-sizing: border-box;
+  min-width: 0;
+  color: #222;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Left icon inside input */
+.icon {
+  position: absolute;
+  left: 16px;
+  width: 28px;
+  height: 28px;
+  fill: #008033;
+  cursor: pointer;
+}
+
+/* Search button */
+.search_button {
+  height: 90px;
+  min-width: 140px;
+  padding: 0 28px;
+  font-size: 20px;
+  background-color: #fabb00;
+  border: none;
+  border-radius: 12px;
+  color: #004b23;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.08s ease;
+  box-sizing: border-box;
+}
+
+/* active state */
+.search_button:active,
+.search_button.clicked {
+  background-color: #008033;
+  color: white;
+}
+
+/* Location badge (right inside input) */
+.current-location-badge {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  width: 36px;
+  height: 36px;
+  z-index: 2;
+}
+.current-location-badge:hover { transform: translateY(-50%) scale(1.03); background: #f0f7f4; }
+.current-location-badge:active { transform: translateY(-50%) scale(0.98); background: #e1f0e8; }
+.current-location-badge:focus { outline: 3px solid rgba(0,128,51,0.18); outline-offset: 2px; }
+.current-location-badge:disabled { cursor: not-allowed; opacity: 0.45; }
+
+/* Location icon */
+.current-location-icon { width: 24px; height: 24px; color: #008033; display: block; }
+.current-location-icon.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Error banner */
+.validation-error {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #ffefef;
+  border: 1px solid #f5c2c2;
+  color: #7a1414;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.error-icon { width: 20px; height: 20px; fill: currentColor; }
+.error-close { margin-left: auto; background: transparent; border: none; cursor: pointer; font-size: 16px; }
+
+/* Hints */
+.input-hint { margin: 0; font-size: 0.95rem; color: #666; }
+.input-hint.warning { color: #7a4f00; }
+.input-hint.success { color: #fff; }
+.input-hint.disabled { color: #999; }
+
+/* --- Responsive breakpoints --- */
+
+/* Medium screens: reduce heights, make search button slightly smaller */
+@media (max-width: 900px) {
+  .search_section { max-width: 900px; padding: 20px 14px; gap: 18px; }
+  .input_container { height: 70px; max-width: 100%; padding: 0 12px; border-radius: 10px; }
+  .input_button { font-size: 18px; padding-left: 40px; padding-right: 44px; }
+  .icon { width: 22px; height: 22px; left: 12px; }
+  .search_button { height: 70px; min-width: 120px; font-size: 18px; padding: 0 20px; border-radius: 10px; }
+  .current-location-badge { width: 34px; height: 34px; right: 6px; }
+}
+
+/* Small screens: stack input and button vertically, full-width controls, larger tap targets */
+@media (max-width: 600px) {
+  .search_section { padding: 16px 12px; gap: 14px; }
+  .input_section { flex-direction: column; align-items: stretch; gap: 12px; }
+  .input_container { height: 56px; padding: 0 12px; border-radius: 10px; }
+  .input_button { font-size: 16px; padding-left: 40px; padding-right: 12px; height: 100%; }
+  .icon { left: 12px; width: 20px; height: 20px; }
+  .current-location-badge { width: 32px; height: 32px; right: 8px; top: 50%; }
+  .search_button {
+    height: 48px;
+    width: 100%;
+    min-width: 0;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 17px;
   }
 }
-  
+
+/* Very small screens: further reduce padding and font-size */
+@media (max-width: 420px) {
+  .heading h1 { font-size: 1.25rem; }
+  .input_button { font-size: 15px; }
+  .search_button { font-size: 16px; height: 46px; }
+}
+
+/* Ensure the input doesn't push out container when long content */
+.input_button::placeholder { color: #9a9a9a; opacity: 1; }
+
+/* Utility: visually-hidden (used in components) */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px,1px,1px,1px);
+  white-space: nowrap;
+}

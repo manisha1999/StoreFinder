@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './SearchFeature.css';
 
 const MIN_SEARCH_LENGTH = 3;
@@ -32,8 +33,7 @@ const isValidCoordinates = (coords: unknown): coords is Coordinates => {
   );
 };
 
-// Validation error types for better error handling
-type ValidationErrorType = 
+type ValidationErrorType =
   | 'EMPTY_INPUT'
   | 'TOO_SHORT'
   | 'TOO_LONG'
@@ -49,36 +49,34 @@ interface ValidationError {
   message: string;
 }
 
-// ✅ Custom Location Icon (no react-icons dependency)
-const LocationIcon: React.FC<{ className?: string }> = ({ className }) => {
-  return (
-    <svg 
-      className={className}
-      viewBox="0 0 24 24" 
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="24"
-      height="24"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="3" fill="currentColor" />
-      <line x1="12" y1="2" x2="12" y2="6" />
-      <line x1="12" y1="18" x2="12" y2="22" />
-      <line x1="2" y1="12" x2="6" y2="12" />
-      <line x1="18" y1="12" x2="22" y2="12" />
-    </svg>
-  );
-};
+// Simple location icon SVG
+const LocationIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="24"
+    height="24"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="3" fill="currentColor" />
+    <line x1="12" y1="2" x2="12" y2="6" />
+    <line x1="12" y1="18" x2="12" y2="22" />
+    <line x1="2" y1="12" x2="6" y2="12" />
+    <line x1="18" y1="12" x2="22" y2="12" />
+  </svg>
+);
 
-export const SearchFeature: React.FC<SearchFeatureProps> = ({ 
-  onSearch, 
+export const SearchFeature: React.FC<SearchFeatureProps> = ({
+  onSearch,
   onError,
   initialValue = '',
-  disabled = false
+  disabled = false,
 }) => {
   const [postcode, setPostcode] = useState<string>(initialValue);
   const [gettingLocation, setGettingLocation] = useState<boolean>(false);
@@ -86,52 +84,38 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const navigate = useNavigate();
 
-  // ✅ Validate input for invalid characters (optional security check)
   const validateInput = useCallback((input: string): ValidationError | null => {
     const trimmed = input.trim();
 
     if (!trimmed) {
-      return {
-        type: 'EMPTY_INPUT',
-        message: 'Please enter a postcode or location'
-      };
+      return { type: 'EMPTY_INPUT', message: 'Please enter a postcode or location' };
     }
-
     if (trimmed.length < MIN_SEARCH_LENGTH) {
-      return {
-        type: 'TOO_SHORT',
-        message: `Please enter at least ${MIN_SEARCH_LENGTH} characters`
-      };
+      return { type: 'TOO_SHORT', message: `Please enter at least ${MIN_SEARCH_LENGTH} characters` };
     }
-
     if (trimmed.length > MAX_SEARCH_LENGTH) {
-      return {
-        type: 'TOO_LONG',
-        message: `Search is too long (max ${MAX_SEARCH_LENGTH} characters)`
-      };
+      return { type: 'TOO_LONG', message: `Search is too long (max ${MAX_SEARCH_LENGTH} characters)` };
     }
 
-    // ✅ Check for potentially dangerous characters (XSS prevention)
     const dangerousChars = /[<>{}[\]\\]/;
     if (dangerousChars.test(trimmed)) {
       return {
         type: 'INVALID_CHARACTERS',
-        message: 'Invalid characters detected. Please use only letters, numbers, and spaces.'
+        message: 'Invalid characters detected. Please use only letters, numbers, and spaces.',
       };
     }
 
     return null;
   }, []);
 
-  // ✅ Auto-focus input on mount
   useEffect(() => {
     if (!disabled) {
       searchInputRef.current?.focus();
     }
   }, [disabled]);
 
-  // ✅ Global keyboard shortcuts
   useEffect(() => {
     if (disabled) return;
 
@@ -141,7 +125,6 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
         searchInputRef.current?.focus();
         return;
       }
-
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         searchInputRef.current?.focus();
@@ -154,80 +137,64 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
     return () => document.removeEventListener('keydown', handleGlobalKeyDown);
   }, [disabled]);
 
-  // ✅ Clear validation error when user types
   useEffect(() => {
     const trimmed = postcode.trim();
-    
     if (validationError && trimmed.length > 0) {
       setValidationError(null);
     }
   }, [postcode, validationError]);
 
-  // ✅ Cleanup on unmount (abort any pending geolocation)
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
 
-  // ✅ Handle form submit with comprehensive error handling
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>): void => {
+      e.preventDefault();
+      if (disabled) return;
 
-    if (disabled) return;
+      const trimmed = postcode.trim();
+      const error = validateInput(trimmed);
 
-    const trimmed = postcode.trim();
-    const error = validateInput(trimmed);
-
-    if (error) {
-      setValidationError(error);
-      searchInputRef.current?.focus();
-
-      // ✅ Call error callback if provided
-      if (onError) {
-        onError(new Error(`Validation Error: ${error.message}`));
+      if (error) {
+        setValidationError(error);
+        searchInputRef.current?.focus();
+        if (onError) onError(new Error(`Validation Error: ${error.message}`));
+        return;
       }
-      return;
-    }
 
-    try {
-      console.log('🔍 Search triggered for:', trimmed);
-      setValidationError(null);
-      onSearch(trimmed);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setValidationError({
-        type: 'UNKNOWN',
-        message: `Search failed: ${errorMessage}`
-      });
-
-      if (onError) {
-        onError(err instanceof Error ? err : new Error(errorMessage));
+      try {
+        setValidationError(null);
+        onSearch(trimmed);
+        // Navigation intentionally handled by parent (SearchPage)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setValidationError({ type: 'UNKNOWN', message: `Search failed: ${errorMessage}` });
+        if (onError) onError(err instanceof Error ? err : new Error(errorMessage));
       }
-    }
-  }, [postcode, onSearch, onError, disabled, validateInput]);
+      navigate(`/${trimmed}`);
+        
+    },
+    [postcode, onSearch, onError, disabled, validateInput]
+  );
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = e.target.value;
-
-    // ✅ Sanitize input: prevent excessive length
-    if (value.length > MAX_SEARCH_LENGTH) {
-      setValidationError({
-        type: 'TOO_LONG',
-        message: `Maximum ${MAX_SEARCH_LENGTH} characters allowed`
-      });
-      return;
-    }
-
-    // Clear validation error when user types valid length
-    if (validationError && value.trim().length >= MIN_SEARCH_LENGTH) {
-      setValidationError(null);
-    }
-
-    setPostcode(value);
-  }, [validationError]);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>): void => {
+      const value = e.target.value;
+      if (value.length > MAX_SEARCH_LENGTH) {
+        setValidationError({ type: 'TOO_LONG', message: `Maximum ${MAX_SEARCH_LENGTH} characters allowed` });
+        return;
+      }
+      if (validationError && value.trim().length >= MIN_SEARCH_LENGTH) {
+        setValidationError(null);
+      }
+      setPostcode(value);
+    },
+    [validationError]
+     
+  );
 
   const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Escape') {
@@ -240,25 +207,18 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
   const handleCurrentLocation = useCallback((): void => {
     if (disabled) return;
 
-    // ✅ Check geolocation support
     if (!('geolocation' in navigator)) {
       const error: ValidationError = {
         type: 'GEOLOCATION_NOT_SUPPORTED',
-        message: 'Geolocation is not supported by your browser'
+        message: 'Geolocation is not supported by your browser',
       };
       setValidationError(error);
       searchInputRef.current?.focus();
-
-      if (onError) {
-        onError(new Error(error.message));
-      }
+      if (onError) onError && onError(new Error(error.message));
       return;
     }
 
-    // ✅ Abort previous geolocation request if exists
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
     setGettingLocation(true);
@@ -268,13 +228,10 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
       setGettingLocation(false);
       const error: ValidationError = {
         type: 'GEOLOCATION_TIMEOUT',
-        message: 'Location request timed out. Please try again or enter a postcode.'
+        message: 'Location request timed out. Please try again or enter a postcode.',
       };
       setValidationError(error);
-
-      if (onError) {
-        onError(new Error(error.message));
-      }
+      if (onError) onError(new Error(error.message));
     }, 10000);
 
     navigator.geolocation.getCurrentPosition(
@@ -284,37 +241,31 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
 
         const coords: Coordinates = {
           lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lng: position.coords.longitude,
         };
 
-        // ✅ Validate coordinates
         if (!isValidCoordinates(coords)) {
           const error: ValidationError = {
             type: 'GEOLOCATION_UNAVAILABLE',
-            message: 'Invalid location data received. Please try again.'
+            message: 'Invalid location data received. Please try again.',
           };
           setValidationError(error);
-
-          if (onError) {
-            onError(new Error(error.message));
-          }
+          if (onError) onError(new Error(error.message));
           return;
         }
 
         try {
-          setPostcode('Current Location');
+          setPostcode('Current Location')
           setValidationError(null);
           onSearch('Current Location', coords);
-        } catch (err) {
+          // Navigation handled by parent (SearchPage)
+           navigate(`/location?lat=${encodeURIComponent(String(coords.lat))}&lng=${encodeURIComponent(String(coords.lng))}`);
+        
+        
+          } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          setValidationError({
-            type: 'UNKNOWN',
-            message: `Failed to search location: ${errorMessage}`
-          });
-
-          if (onError) {
-            onError(err instanceof Error ? err : new Error(errorMessage));
-          }
+          setValidationError({ type: 'UNKNOWN', message: `Failed to search location: ${errorMessage}` });
+          if (onError) onError(err instanceof Error ? err : new Error(errorMessage));
         }
       },
       (err: GeolocationPositionError) => {
@@ -323,39 +274,32 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
         setPostcode('');
 
         let error: ValidationError;
-
         switch (err.code) {
           case err.PERMISSION_DENIED:
             error = {
               type: 'GEOLOCATION_PERMISSION_DENIED',
-              message: 'Location access denied. Please enable location permissions in your browser settings.'
+              message: 'Location access denied. Please enable location permissions in your browser settings.',
             };
             break;
           case err.POSITION_UNAVAILABLE:
             error = {
               type: 'GEOLOCATION_UNAVAILABLE',
-              message: 'Location information is unavailable. Please try again or enter a postcode.'
+              message: 'Location information is unavailable. Please try again or enter a postcode.',
             };
             break;
           case err.TIMEOUT:
             error = {
               type: 'GEOLOCATION_TIMEOUT',
-              message: 'Location request timed out. Please try again or enter a postcode.'
+              message: 'Location request timed out. Please try again or enter a postcode.',
             };
             break;
           default:
-            error = {
-              type: 'UNKNOWN',
-              message: 'Unable to get your location. Please enter a postcode.'
-            };
+            error = { type: 'UNKNOWN', message: 'Unable to get your location. Please enter a postcode.' };
         }
 
         setValidationError(error);
         searchInputRef.current?.focus();
-
-        if (onError) {
-          onError(new Error(`Geolocation Error (${err.code}): ${error.message}`));
-        }
+        if (onError) onError(new Error(`Geolocation Error (${err.code}): ${error.message}`));
       },
       {
         enableHighAccuracy: true,
@@ -363,6 +307,9 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
         maximumAge: 0,
       }
     );
+
+
+   
   }, [onSearch, onError, disabled]);
 
   const loading = gettingLocation;
@@ -378,20 +325,13 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
           <p>Enter a postcode or town below to search for your nearest store and find its opening times</p>
         </header>
 
-        {/* ✅ Validation Error Banner */}
         {validationError && (
-          <div 
-            className="validation-error" 
-            role="alert" 
-            aria-live="assertive"
-          >
-            <svg 
-              className="error-icon" 
-              viewBox="0 0 24 24" 
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+          <div className="validation-error" role="alert" aria-live="assertive">
+            <svg className="error-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                fill="currentColor"
+              />
             </svg>
             <span>{validationError.message}</span>
             <button
@@ -430,8 +370,6 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
               required
             />
 
-            
-
             <button
               type="button"
               className="current-location-badge"
@@ -440,24 +378,15 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
               aria-label={loading ? 'Getting your location...' : 'Use current location'}
               title="Use my current location"
             >
-              <LocationIcon
-                className={`current-location-icon ${gettingLocation ? 'spinning' : ''}`}
-              />
+              <LocationIcon className={`current-location-icon ${gettingLocation ? 'spinning' : ''}`} />
             </button>
           </div>
-          <button
-            type="submit"
-            className="search_button"
-            disabled={!canSearch}
-            aria-label={
-              'Enter Postcode or location'
-            }
-          >
+
+          <button type="submit" className="search_button" disabled={!canSearch} aria-label="Enter Postcode or location">
             {loading ? 'Searching...' : 'Search'}
           </button>
         </form>
 
-        {/* ✅ Visual hints */}
         {showLengthWarning && !validationError && (
           <p className="input-hint warning" aria-hidden="true">
             ⚠️ Enter at least {MIN_SEARCH_LENGTH} characters (current: {trimmedLength})
@@ -480,8 +409,4 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
   );
 };
 
-// ✅ Named export for better tree-shaking
 export default SearchFeature;
-
-// ✅ Export types for consumers
-export type { SearchFeatureProps, ValidationErrorType };

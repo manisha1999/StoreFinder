@@ -2,6 +2,7 @@ import "./Home.css"
 import React, { useState, useEffect, useMemo } from 'react'
 import SearchFeature from "../SearchFeature/SearchFeature"
 import { useStoreSearch } from '../../Hooks/useStoreSearch';
+// import {useNavigate} from 'react-router-dom'
 import { Screen2 } from '../Screen2/Screen2';
 import Footer from "../Footer/Footer"
 import {NavBar} from "../NavBar/NavBar"
@@ -44,6 +45,9 @@ function Home() {
     [loading, error, stores]
   );
 
+
+
+
   return (
     <div className="app-page">
       <header className="site-header" role="banner" aria-label="Global header">
@@ -51,11 +55,16 @@ function Home() {
       </header>
 
       <main className="site-main" role="main" aria-label="Store finder search and results">
-        <img className="logo" src={logo} alt="Company logo" />
+         <img
+              className="logo"
+              src={logo}
+              alt="Company logo"
+              style={{ display: 'block', maxWidth: 100, width: '100%', height: 'auto' ,marginLeft:'100px'}}
+            />
         <section className="main" aria-labelledby="store-search-heading">
           <div className="main_section">
             <h1 id="store-search-heading" className="visually-hidden">Find a store</h1>
-
+             
             <SearchFeature onSearch={handleSearch} aria-label="Search feature" />
 
             {showScreen && (
