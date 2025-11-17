@@ -18,7 +18,7 @@ pipelines:
             - npm
           script:
             - npm install --silent --no-audit
-            - npm run build
+            - CI=false npm run build
       - step:
           name: Deploy to S3
           deployment: production
@@ -46,7 +46,7 @@ pipelines:
             - npm
           script:
             - npm install --silent --no-audit
-            - npm run build
+            - CI=false npm run build
       - step:
           name: Deploy to S3 (manual)
           deployment: production
