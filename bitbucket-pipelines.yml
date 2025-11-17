@@ -15,11 +15,12 @@ pipelines:
             - cd morrisons_store_finder
             - npm install --silent --no-audit
             - CI=false npm run build
+          artifacts:
+            - morrisons_store_finder/build/**
       - step:
           name: Deploy to S3
           deployment: production
           script:
-            # deploy the build produced under morrisons_store_finder/build
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -30,8 +31,7 @@ pipelines:
                 ACL: 'public-read'
                 EXTRA_ARGS: '--delete'
                 CACHE_CONTROL: 'max-age=31536000, public'
-                # Optional: invalidate CloudFront distribution after deploy
-                # CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID
+                CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID
 
   custom:
     deploy-production:
@@ -44,6 +44,8 @@ pipelines:
             - cd morrisons_store_finder
             - npm install --silent --no-audit
             - CI=false npm run build
+          artifacts:
+            - morrisons_store_finder/build/**
       - step:
           name: Deploy to S3 (manual)
           deployment: production
@@ -58,3 +60,4 @@ pipelines:
                 ACL: 'public-read'
                 EXTRA_ARGS: '--delete'
                 CACHE_CONTROL: 'max-age=31536000, public'
+                CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID
