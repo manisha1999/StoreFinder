@@ -3,33 +3,61 @@
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 
-image: atlassian/default-image:3
+image: node:18
+
+definitions:
+  caches:
+    npm: ~/.npm
 
 pipelines:
-  default:
-    - parallel:
+  branches:
+    main:
       - step:
-          name: 'Build and Test'
+          name: Build
+          caches:
+            - npm
           script:
-            - echo "Your build and test goes here..."
+            - npm ci
+            - npm run build
       - step:
-          name: 'Lint'
+          name: Deploy to S3
+          deployment: production
           script:
-            - echo "Your linting goes here..."
-      - step:
-          name: 'Security scan'
-          script:
-            - echo "Your security scan goes here..."
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: $S3_BUCKET
+                LOCAL_PATH: 'build'
+                ACL: 'public-read'
+                EXTRA_ARGS: '--delete'
+                CACHE_CONTROL: 'max-age=31536000, public'
+                # Optional: invalidate CloudFront distribution after deploy
+                # CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID
 
-    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
-    - step:
-        name: 'Deployment to Staging'
-        deployment: staging
-        script:
-          - echo "Your deployment to staging script goes here..."
-    - step:
-        name: 'Deployment to Production'
-        deployment: production
-        trigger: 'manual'
-        script:
-          - echo "Your deployment to production script goes here..."
+  # optional manual deployment for other branches/tags
+  custom:
+    deploy-production:
+      - step:
+          name: Build
+          image: node:18
+          caches:
+            - npm
+          script:
+            - npm ci
+            - npm run build
+      - step:
+          name: Deploy to S3 (manual)
+          deployment: production
+          script:
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: $S3_BUCKET
+                LOCAL_PATH: 'build'
+                ACL: 'public-read'
+                EXTRA_ARGS: '--delete'
+                CACHE_CONTROL: 'max-age=31536000, public'
