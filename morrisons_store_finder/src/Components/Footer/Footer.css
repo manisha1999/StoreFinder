@@ -1,174 +1,168 @@
+/* Full Footer.css with social icons using inline SVG data-URIs as background-images.
+   Keeps your existing layout and replaces pseudo-element SVG rules with direct
+   background-image on the .social-icon elements for simpler styling and hover effects.
+*/
+
 .footer {
-  background: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #ffffff;
   color: #333;
   padding: 0;
   margin-top: 4rem;
-  min-height: 500px;
   border-top: 1px solid #e0e0e0;
+  width: 100%;
 }
 
 .footer-container {
   max-width: 100%;
-  margin: 20px auto;
+  margin: 0 auto;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* Upper Section */
 .footer-upper {
-  margin: 40px 40px 40px 40px;
+  margin: 24px 40px;
   display: flex;
   flex-direction: row;
-  height: 5rem;
   align-items: center;
-  padding-bottom: 0;
-  border-bottom: none;
-  margin-bottom: 0;
+  gap: 16px;
 }
 
-.footer-logo-section {
-  width: 70%;
-  flex-shrink: 0;
-}
-
-.footer-logo {
-  height: 80px;
-  width: 200px;
-  margin-top: 10px;
-  filter: none;
-}
+.footer-logo-section { flex: 1 1 60%; }
+.footer-logo { height: 60px; width: auto; }
 
 /* Social Media Links */
 .social-media-links {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 30%;
   justify-content: flex-end;
+  flex: 0 0 240px;
 }
 
+/* Base social icon style — shows SVG via background-image */
 .social-icon {
-  width: 20px;
-  height: 20px;
-  padding: 13px;
+  width: 40px;
+  height: 40px;
+  display: inline-block;
   border-radius: 50%;
-  background: #3c3232;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  position: relative;
-}
-
-.social-icon:hover {
-  background: #4CAF50;
-  transform: translateY(-3px);
-}
-
-.social-icon::before {
-  content: '';
-  width: 20px;
-  height: 20px;
-  background-size: 15px 15px;
   background-repeat: no-repeat;
   background-position: center;
-}
-
-.social-icon.facebook::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
-}
-
-.social-icon:hover.facebook::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
-}
-
-.social-icon.twitter::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>');
-}
-
-.social-icon:hover.twitter::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>');
-}
-
-.social-icon.instagram::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>');
-}
-
-.social-icon:hover.instagram::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>');
-}
-
-.social-icon.youtube::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>');
-}
-
-.social-icon:hover.youtube::before {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>');
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  background-size: 20px 20px;
+  text-indent: -9999px; /* hide text visually (accessible name via aria-label) */
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+  transition: transform .12s ease, opacity .12s ease;
+  box-shadow: none;
 }
 
-/* Footer Links Grid */
+/* Individual icons using the SVG data URIs (keeps the SVG fill white so brand color used as background) */
+.social-icon.facebook {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
+  background-color: #1877f2;
+}
+
+.social-icon.twitter {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>');
+  background-color: #1da1f2;
+}
+
+.social-icon.instagram {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>');
+  background-color: #e1306c;
+}
+
+.social-icon.youtube {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M23.498 6.186a2.96 2.96 0 00-2.083-2.09C19.37 3.5 12 3.5 12 3.5s-7.37 0-9.415.596A2.96 2.96 0 00.502 6.186C0 8.26 0 12 0 12s0 3.741.502 5.814a2.96 2.96 0 002.083 2.09C4.63 20.5 12 20.5 12 20.5s7.37 0 9.415-.596a2.96 2.96 0 002.083-2.09C24 15.741 24 12 24 12s0-3.741-.502-5.814zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>');
+  background-color: #ff0000;
+}
+
+/* Hover/focus visual affordance */
+.social-icon:hover,
+.social-icon:focus {
+  transform: translateY(-2px);
+  opacity: 0.95;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Footer Links Grid — full width spread on desktop */
 .footer-links-grid {
-  margin: 40px 40px 40px 40px;
   display: flex;
-  flex-direction: row;
-  gap: 20px;
-  width: 70%;
+  width: 100%;
+  gap: 24px;
+  padding: 24px 40px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
+/* Four-column layout on wide screens */
 .footer-section {
   color: #666;
   font-size: 14px;
-  width: 25%;
-  min-height: 18rem;
-  margin-left: 32px;
-}
-
-.footer-section h3 {
-  color: black;
-  font-size: 3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.footer-section ul {
-  list-style: none;
-  padding: 0;
+  flex: 1 1 calc(25% - 24px);
+  min-width: 220px;
+  box-sizing: border-box;
   margin: 0;
 }
 
-.footer-section li {
-  margin-bottom: 0.75rem;
+/* Header area for each section */
+.footer-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
+.footer-section h4 {
+  color: #000;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+}
+
+/* Link list */
+.footer-panel { list-style: none; padding: 0; margin: 0; }
+.footer-section li { margin-bottom: 0.75rem; }
+
+/* Add a small Morrisons green dot icon before each link */
 .footer-section a {
   color: #666;
   text-decoration: none;
   font-size: 14px;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* .footer-section a::before {
+  content: "";
   display: inline-block;
-}
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #008033; /* Morrisons green */
+  /* flex: 0 0 auto; */
+/* } */ 
 
-.footer-section a:hover {
-  color: #4CAF50;
-  padding-left: 5px;
+/* Toggle button (hidden on large desktop) */
+.footer-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #333;
 }
+.toggle-icon { font-weight: 700; font-size: 1.25rem; display: inline-block; }
 
-/* Footer Bottom */
+/* Footer bottom */
 .footer-bottom {
   text-align: center;
   padding: 2rem 0 1rem;
@@ -176,63 +170,37 @@
   margin: 0 40px;
 }
 
-.footer-bottom p {
-  color: #999;
-  font-size: 0.875rem;
-  margin: 0;
+/* Responsive: ensure grid wraps nicely */
+@media (max-width: 1200px) {
+  .footer-section { flex: 1 1 calc(33.333% - 24px); min-width: 200px; }
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .footer-links-grid {
-    flex-wrap: wrap;
-  }
+/* Important: show + toggle for medium screens (<=1100px) */
+@media (max-width: 1100px) {
+  .footer-section { flex: 1 1 100%; min-width: 0; padding: 12px 0; border-bottom: 1px solid #eee; }
 
-  .footer-section {
-    width: calc(50% - 10px);
-  }
+  /* show toggle button on medium and smaller */
+  .footer-toggle-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Panels collapsed by default; expanded class shows them */
+  .footer-panel { display: none; margin-top: 10px; }
+  .footer-panel.expanded { display: block; }
+
+  /* Links: keep icons but stack comfortably */
+  .footer-section a { gap: 12px; }
 }
 
+/* Small screens: tighter spacing */
 @media (max-width: 768px) {
-  .footer {
-    min-height: auto;
-  }
+  .footer-upper { margin: 16px 20px; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .social-media-links { justify-content: center; width: auto; }
+  .footer-links-grid { padding: 12px 20px; gap: 12px; }
+  .footer-section { padding: 12px 0; }
+  .footer-bottom { margin: 0 20px; }
+}
 
-  .footer-upper {
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-    height: auto;
-    margin: 20px;
-  }
-
-  .footer-logo-section {
-    width: 100%;
-  }
-
-  .footer-logo {
-    margin: 0 auto;
-  }
-
-  .social-media-links {
-    width: 100%;
-    justify-content: center;
-    margin-left: 0;
-  }
-
-  .footer-links-grid {
-    flex-direction: column;
-    margin: 20px;
-    gap: 1.5rem;
-  }
-
-  .footer-section {
-    width: 100%;
-    min-height: auto;
-    text-align: left;
-  }
-
-  .footer-bottom {
-    margin: 0 20px;
-  }
+/* tiny screens */
+@media (max-width: 420px) {
+  .footer-section a { font-size: 13px; }
+  .social-icon { width: 36px; height: 36px; padding: 6px; }
 }

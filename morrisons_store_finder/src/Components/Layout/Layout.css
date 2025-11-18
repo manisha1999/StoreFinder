@@ -1,0 +1,163 @@
+
+:root{
+  --morrisons-green: #008033;
+  --page-max-width: 1200px;
+  --header-height: 72px;
+  --header-bg: #ffffff;
+  --accent: var(--morrisons-green);
+  --muted: #6b6b6b;
+  --footer-bg: #f6f6f6;
+}
+
+/* Layout shell */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #222;
+  background: #fff;
+}
+
+/* Header */
+.site-header {
+  background: var(--header-bg);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  flex: 0 0 auto;
+}
+
+.header-inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  height: var(--header-height);
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+/* Logo placement */
+.site-logo {
+  display: block;
+  height: 48px;
+  width: auto;
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+}
+
+/* Center column holds possible global search / page title, keeps content aligned */
+.header-center {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right side nav */
+.header-nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* consistent page container used by every page */
+.page-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Main content growth */
+.app-main {
+  flex: 1 0 auto;
+  background: transparent;
+}
+
+/* Footer */
+.site-footer {
+  flex-shrink: 0;
+  background: var(--footer-bg);
+  border-top: 1px solid rgba(0,0,0,0.04);
+  padding: 1.25rem 0;
+}
+
+/* Footer inner container */
+.site-footer > * {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* Small utilities to align content under header */
+.visually-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive behaviour */
+@media (min-width: 900px) {
+  .header-inner {
+    padding: 0 2rem;
+  }
+  .site-logo {
+    height: 56px;
+  }
+  .header-center {
+    justify-content: flex-start; /* align search / title just right of logo on desktop */
+    padding-left: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-inner {
+    padding: 0 .75rem;
+    height: 60px;
+  }
+  .site-logo {
+    height: 40px;
+  }
+  .header-nav {
+    gap: 0.5rem;
+  }
+}
+
+/* Optional small nav link styling so Navbar inherits consistent look */
+.header-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+.header-nav a:hover {
+  color: #111;
+  background: rgba(95,182,66,0.06);
+}
+
+/* Ensure content below header starts aligned with logo and page container */
+.main_section, .home-content, .search-section {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* keep footer items readable */
+.site-footer p, .site-footer a {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Accessibility: focus outlines for interactive items */
+.header-nav a:focus, .site-logo:focus {
+  outline: 3px solid rgba(95,182,66,0.25);
+  outline-offset: 2px;
+}
+ 

@@ -1,57 +1,208 @@
+/* ...existing code... */
+
+/* Responsive FilterModal updates
+   - Centered dialog on desktop
+   - Bottom-sheet style on small screens
+   - Larger touch targets for checkbox items
+   - Scrollable content when tall
+*/
+
+:root {
+  --modal-max-width: 760px;
+  --modal-gutter: 20px;
+  --accent: #008033;
+  --bg: #fff;
+  --muted: #eef2f1;
+  --text: #232f35;
+}
+
+/* Backdrop */
 .modal-backdrop {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: fixed;
   z-index: 999;
   left: 0; top: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.05);
-  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
 }
+
+/* Modal content (desktop) */
 .modal-content {
-  background: #fff;
+  background: var(--bg);
   border-radius: 10px;
   padding: 2.5em 3em 3em 3em;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
-  min-width: 650px;
-  max-width: 90vw;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  width: 100%;
+  max-width: var(--modal-max-width);
+  max-height: calc(100vh - 96px);
+  overflow: hidden;
   position: relative;
+  box-sizing: border-box;
 }
+
+/* make the modal scrollable if content is taller than max-height */
+.modal-content .modal-body {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+/* Close button */
 .close-btn {
-  color: #008033;
-  background: none; border: none; font-weight: 700; font-size: 1.07em;
-  position: absolute; right: 2em; top: 2em; cursor: pointer;
+  color: var(--accent);
+  background: none;
+  border: none;
+  font-weight: 700;
+  font-size: 1.07em;
+  position: absolute;
+  right: 20px;
+  top: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
 }
+.close-btn:focus {
+  outline: 3px solid rgba(0,128,51,0.16);
+  outline-offset: 2px;
+}
+
+/* Sections */
 .modal-section {
   margin-top: 2em;
 }
 .modal-section h3 {
-  font-size: 1.1em;
-  color: #232f35;
-  margin-bottom: 1em;
+  font-size: 1.05em;
+  color: var(--text);
+  margin-bottom: 0.75em;
   font-weight: 700;
 }
+
+/* Checkbox grid */
 .modal-checkbox-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 22px;
+  gap: 14px;
 }
-.checkbox-label {
-  display: flex;
+
+/* Each checkbox item sized for touch */
+.filter-checkbox {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 0;
-  font-size: 1.1em;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  transition: background .12s ease, transform .06s ease;
+  min-width: 140px;
+  box-sizing: border-box;
 }
-.fancy-checkbox {
-  width: 26px; height: 26px;
-  border-radius: 4px;
-  display: inline-block;
-  background: #eef2f1;
+.filter-checkbox.checked {
+  background: rgba(0,128,51,0.06);
+}
+
+/* hidden native input but keyboard accessible */
+.filter-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* custom checkbox square */
+.checkbox-custom {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--muted);
   border: 2px solid transparent;
-  transition: background .2s;
+  box-sizing: border-box;
+  flex: 0 0 auto;
 }
-.checkbox-label input:checked + .fancy-checkbox {
-  background: #008033;
-  border-color: #008033;
+.filter-checkbox.checked .checkbox-custom {
+  background: var(--accent);
+  border-color: var(--accent);
 }
-.checkbox-label input {
-  display: none;
+
+/* check svg color override */
+.checkbox-custom svg { display: block; }
+
+/* label text */
+.filter-label-text {
+  font-size: 1rem;
+  color: var(--text);
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* focus state for keyboard users */
+.filter-checkbox:focus-within,
+.filter-checkbox:focus {
+  outline: 3px solid rgba(0,128,51,0.12);
+  outline-offset: 2px;
+}
+
+/* Small screens: bottom sheet pattern */
+@media (max-width: 900px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+    background: linear-gradient(rgba(0,0,0,0.24), rgba(0,0,0,0.36));
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    border-radius: 12px 12px 0 0;
+    padding: 18px 16px 20px 16px;
+    max-height: calc(100vh - 64px);
+  }
+
+  .modal-content .modal-body {
+    max-height: calc(100vh - 160px);
+  }
+
+  .close-btn {
+    right: 12px;
+    top: 12px;
+  }
+
+  .modal-checkbox-row {
+    gap: 12px;
+  }
+
+  .filter-checkbox { min-width: 120px; padding: 10px; }
+  .checkbox-custom { width: 40px; height: 40px; border-radius: 8px; }
+  .filter-label-text { font-size: 1rem; }
+}
+
+/* Very small screens: tighter spacing */
+@media (max-width: 420px) {
+  .modal-content {
+    padding: 14px 12px 16px 12px;
+    max-height: calc(100vh - 56px);
+  }
+  .modal-section { margin-top: 1rem; }
+  .modal-section h3 { font-size: 1rem; margin-bottom: 0.6rem; }
+  .filter-checkbox { min-width: 100px; gap: 10px; padding: 10px 8px; }
+  .checkbox-custom { width: 36px; height: 36px; }
+  .filter-label-text { font-size: 0.95rem; }
+}
+
+/* utility: ensure SVG check icon scales nicely */
+.checkbox-custom svg { width: 18px; height: 18px; }
+
+/* make modal body keyboard accessible scrollbar visible when needed */
+.modal-content .modal-body::-webkit-scrollbar { width: 8px; }
+.modal-content .modal-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+
