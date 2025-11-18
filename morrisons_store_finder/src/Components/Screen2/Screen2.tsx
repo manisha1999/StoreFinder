@@ -246,6 +246,7 @@ export const Screen2: React.FC<Screen2Props> = ({
   }
 
   // Error state
+  // Error state
   if (error) {
     return (
       <div className="screen2-container">
@@ -256,6 +257,7 @@ export const Screen2: React.FC<Screen2Props> = ({
     );
   }
 
+  // No stores found
   // No stores found
   if (!stores || stores.length === 0) {
     return effectiveSearchQuery ? (
