@@ -12,7 +12,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   list-style: none;
-  width: 100%;
+  width: -webkit-fill-available;
   display: flex;
   flex-direction: column;
 }
@@ -24,6 +24,7 @@
 }
 
 .store-card-header {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -37,6 +38,7 @@
 }
 
 .store-name {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 1.2rem;
   font-weight: 600;
   color: #2c3e50;
@@ -76,10 +78,10 @@
 }
 
 .store-distance {
-  background: #4CAF50;
-  color: white;
+  
+  color: black;
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  
   font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
@@ -87,6 +89,7 @@
 
 .store-card-body {
   margin-bottom: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .store-address,
@@ -126,6 +129,7 @@
   border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 500;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   cursor: pointer;
   transition: background 0.3s ease;
 }

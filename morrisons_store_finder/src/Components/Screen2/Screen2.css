@@ -1,54 +1,70 @@
+/* Responsive & improved layout for Screen2 */
+
 /* Root container */
 .screen2-container {
   width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 1.5rem;
+  box-sizing: border-box;
 }
 
-/* Split layout: left list (30%) | right map (70%) */
+/* Split layout: left list | right map */
 .screen2-split-layout {
   display: flex;
   gap: 0;
-  height: calc(100vh - 200px);
-  min-height: 600px;
+  height: calc(100vh - 160px); /* leave room for header/footer */
+  min-height: 520px;
+  align-items: stretch;
+  box-sizing: border-box;
 }
 
-/* Left: Store list (30%) */
+/* Left: Store list */
 .stores-list-section {
-  width: 30%;
+  flex: 0 0 34%;
+  max-width: 420px;
   height: 100%;
   overflow-y: auto;
-  padding: 1rem 2rem;
-  background: #f9f9f9;
-  border-right: 1px solid #e0e0e0;
+  padding: 1.25rem 1.5rem;
+  background: #fafafa;
+  border-right: 1px solid #e9e9e9;
+  box-sizing: border-box;
 }
 
+/* Sticky header inside list */
 .stores-header {
   position: sticky;
   top: 0;
-  background: #f9f9f9;
-  padding: 1rem 0;
+  background: inherit;
+  padding-bottom: 0.75rem;
   margin-bottom: 1rem;
   z-index: 10;
   border-bottom: 2px solid #4CAF50;
 }
 
+/* Title + count layout */
 .results-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 400;
   color: #2c3e50;
   margin: 0;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-
+.results-title .nearest-city {
+  font-weight: 600;
+  color: #111;
+}
 .store-count {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #4CAF50;
+  margin-left: 6px;
 }
 
+/* Stores list */
 .stores-grid {
   list-style: none;
   padding: 0;
@@ -58,12 +74,14 @@
   gap: 1rem;
 }
 
-/* Right: Map (70%) */
+/* Right: Map area */
 .map-section {
-  width: 70%;
+  flex: 1 1 66%;
   position: relative;
-  background: #e5e5e5;
+  background: #ececec;
   height: 100%;
+  min-height: 420px;
+  box-sizing: border-box;
 }
 
 /* Ensure embedded map fills the right panel */
@@ -71,134 +89,112 @@
 .map-section > div {
   width: 100%;
   height: 100%;
+  min-height: 320px;
+  box-sizing: border-box;
 }
 
-/* Loading state */
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  min-height: 400px;
+/* Loading / Error / No results (kept similar but responsive) */
+.loading-spinner,
+.no-results,
+.error-message {
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
+/* Spinner */
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #4CAF50;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 46px;
+  height: 46px;
   animation: spin 1s linear infinite;
-  margin-bottom: 1.5rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-spinner p {
-  font-size: 1.1rem;
-  color: #666;
-  font-weight: 500;
-}
-
-/* Error state */
-.error-message {
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
-  padding: 2rem;
-  margin: 2rem;
-  text-align: center;
-}
-
-.error-message p {
-  color: #c33;
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-/* No results */
-.no-results {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-}
-
-.no-results h2 {
-  font-size: 1.8rem;
-  color: #2c3e50;
   margin-bottom: 1rem;
 }
 
-.no-results p {
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-}
-
-.suggestion {
-  color: #4CAF50;
-  font-weight: 500;
-  margin-top: 1rem !important;
-}
-
-/* Scrollbar styling for store list */
+/* Scrollbar for left panel (subtle) */
 .stores-list-section::-webkit-scrollbar {
   width: 8px;
 }
-
 .stores-list-section::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #fafafa;
 }
-
 .stores-list-section::-webkit-scrollbar-thumb {
-  background: #4CAF50;
-  border-radius: 4px;
+  background: rgba(76,175,80,0.22);
+  border-radius: 6px;
 }
 
-.stores-list-section::-webkit-scrollbar-thumb:hover {
-  background: #45a049;
-}
+/* Responsive breakpoints */
 
-/* Responsive */
+/* Tablet / narrow desktop: stack panels vertically and limit list height */
 @media (max-width: 1024px) {
   .screen2-split-layout {
     flex-direction: column;
     height: auto;
   }
 
-  .stores-list-section,
-  .map-section {
+  .stores-list-section {
     width: 100%;
-  }
-
-  .stores-list-section {
-    max-height: 500px;
+    max-width: 100%;
     border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .map-section {
-    min-height: 500px;
-  }
-}
-
-@media (max-width: 768px) {
-  .screen2-container {
-    padding: 1rem 0;
-  }
-
-  .stores-list-section {
+    border-bottom: 1px solid #e9e9e9;
+    max-height: 48vh; /* limit list height so map is visible below */
+    overflow-y: auto;
     padding: 1rem;
   }
 
-  .results-title {
-    font-size: 1.25rem;
+  .map-section {
+    width: 100%;
+    min-height: 48vh;
   }
 
-  .stores-grid {
-    gap: 0.75rem;
+  .results-title { font-size: 1.05rem; }
+}
+
+/* Small screens: compact spacing and bigger tap targets */
+@media (max-width: 768px) {
+  .screen2-container {
+    padding: 12px;
   }
+
+  .screen2-split-layout { gap: 8px; }
+
+  .stores-list-section {
+    padding: 12px;
+    max-height: 42vh;
+  }
+
+  .map-section {
+    min-height: 42vh;
+  }
+
+  .results-title {
+    font-size: 1.1rem;
+    gap: 0.5rem;
+  }
+
+  .store-count { font-size: 0.95rem; }
+  .stores-grid { gap: 0.75rem; }
+}
+
+/* Mobile: single column, list first then map; ensure comfortable gutters */
+@media (max-width: 480px) {
+  .screen2-container { padding: 10px; }
+  .stores-list-section { padding: 10px; max-height: 40vh; }
+  .map-section { min-height: 36vh; }
+  .results-title { font-size: 1rem; }
+  .store-count { font-size: 0.92rem; }
+  .stores-grid { gap: 0.6rem; }
+}
+
+/* Ensure map isn't clipped when list is very long on narrow screens */
+@media (max-height: 600px) and (max-width: 900px) {
+  .stores-list-section { max-height: 36vh; }
+  .map-section { min-height: 48vh; }
+}
+
+/* Utility: small helper for consistent margins if needed elsewhere */
+.section-padding {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
