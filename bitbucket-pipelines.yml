@@ -1,35 +1,44 @@
-# This is an example Starter pipeline configuration
-# Use a skeleton to build, test and deploy using manual and parallel steps
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
+image: node:18
 
-image: atlassian/default-image:3
+definitions:
+  caches:
+    npm: ~/.npm
 
 pipelines:
-  default:
-    - parallel:
+  branches:
+    main:
       - step:
-          name: 'Build and Test'
+          name: Build (subfolder)
+          caches:
+            - npm
           script:
-            - echo "Your build and test goes here..."
+            - cd morrisons_store_finder
+            # install deps without optional native modules that may require kernel access
+            - npm install --silent --no-audit --no-optional
+            # avoid CRA treating warnings as errors in CI
+            - CI=false npm run build
+          artifacts:
+            - morrisons_store_finder/build/**
       - step:
-          name: 'Lint'
+          name: Deploy to Vercel
+          deployment: production
           script:
-            - echo "Your linting goes here..."
+            - cd morrisons_store_finder
+            # use npx to run vercel CLI without global install
+            - npx --yes vercel --version
+            # deploy to Vercel; requires VERCEL_TOKEN (set in repo variables)
+            - npx --yes vercel --token $VERCEL_TOKEN --prod --confirm
+          
+  custom:
+    deploy-vercel:
       - step:
-          name: 'Security scan'
+          name: Deploy (manual) to Vercel
+          image: node:18
+          caches:
+            - npm
           script:
-            - echo "Your security scan goes here..."
-
-    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
-    - step:
-        name: 'Deployment to Staging'
-        deployment: staging
-        script:
-          - echo "Your deployment to staging script goes here..."
-    - step:
-        name: 'Deployment to Production'
-        deployment: production
-        trigger: 'manual'
-        script:
-          - echo "Your deployment to production script goes here..."
+            - cd morrisons_store_finder
+            - npm install --silent --no-audit --no-optional
+            - CI=false npm run build
+            - npx --yes vercel --version
+            - npx --yes vercel --token $VERCEL_TOKEN --prod --confirm
