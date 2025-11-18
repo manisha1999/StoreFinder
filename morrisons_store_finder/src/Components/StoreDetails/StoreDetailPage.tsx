@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
 import { storeCache } from '../StoreCache/StoreCache';
-
+import { Helmet } from 'react-helmet';
 import './StoreDetailsPage.css';
 import logo from '../../logo.svg';
 
@@ -97,20 +97,66 @@ const StoreDetailPage: React.FC = () => {
     );
   }
 
+  // build simple metadata values from details
+  const storeName = details.storeName || 'Morrisons store';
+  const addressObj = (details as any).address;
+  const addressText =
+    typeof addressObj === 'string'
+      ? addressObj
+      : addressObj && (addressObj.addressLine1 || addressObj.address || '')
+      ? String(addressObj.addressLine1 || addressObj.address)
+      : '';
+  const today = (details.openingTimes && (() => {
+    const dow = new Date().getDay();
+    const keys = ['sun','mon','tue','wed','thu','fri','sat'];
+    return details.openingTimes[keys[dow]];
+  })()) || null;
+
+  const openSummary = today && today.open && today.close ? `Open today ${formatTime(today.open)} - ${formatTime(today.close)}` : 'Opening times not available';
+
+  const metaTitle = `${storeName} — Morrisons Store`;
+  const metaDescription = `${addressText ? addressText + ' • ' : ''}${openSummary}`;
+
+
+
   return (
     <div>
+       <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        {/* basic JSON-LD for localBusiness (optional) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Store",
+            "name": storeName,
+            "image": typeof window !== 'undefined' ? `${window.location.origin}/logo192.png` : undefined,
+            "address": addressText || undefined,
+            "description": metaDescription,
+            "url": typeof window !== 'undefined' ? window.location.href : undefined,
+          })}
+        </script>
+      </Helmet>
+
+
       <Suspense fallback={null}><NavBarLazy /></Suspense>
-      <img
-              className="logo"
+      <div className="logo">
+        <img  
               src={logo}
               alt="Company logo"
-              style={{ display: 'block', maxWidth: 100, width: '100%', height: 'auto' ,marginLeft:'100px'}}
-            />
+      
+        />
+      </div>
+      
       <main className="store-detail-page" role="main" aria-labelledby="store-title">
         <div className="store-detail-container">
           <header className="detail-header" aria-labelledby="store-title">
             {/* <button className="back-button" onClick={() => navigate(-1)} aria-label="Go back">← Back</button> */}
-            <div>
+            <div className="store-header-text">
               <p>{`Store Finder > ${details.storeName}`}</p>
               <h1 id="store-title" ref={headingRef} tabIndex={-1} className="store-title">{details.storeName}</h1>
               <p className="store-hours" aria-live="polite">

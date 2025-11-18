@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import './SearchFeature.css';
 
 const MIN_SEARCH_LENGTH = 3;
@@ -177,7 +178,7 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
       navigate(`/${trimmed}`);
         
     },
-    [postcode, onSearch, onError, disabled, validateInput]
+    [postcode, onSearch, onError, disabled, validateInput, navigate]
   );
 
   const handleInputChange = useCallback(
@@ -310,14 +311,36 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
 
 
    
-  }, [onSearch, onError, disabled]);
+  }, [onSearch, onError, disabled,navigate]);
 
   const loading = gettingLocation;
   const trimmedLength = postcode.trim().length;
   const canSearch = !loading && !disabled && trimmedLength >= MIN_SEARCH_LENGTH;
   const showLengthWarning = trimmedLength > 0 && trimmedLength < MIN_SEARCH_LENGTH;
+const trimmed = postcode.trim();
+   const pageTitle =
+    gettingLocation
+      ? 'Finding stores near you — Morrisons Store Finder'
+      : trimmedLength >= MIN_SEARCH_LENGTH
+      ? `Stores near ${trimmed} — Morrisons Store Finder`
+      : 'Find a Morrisons store — Morrisons Store Finder';
 
+  const pageDescription =
+    trimmedLength >= MIN_SEARCH_LENGTH
+      ? `Search results for ${trimmed}. Find nearby Morrisons stores, opening times and services.`
+      : 'Search for your nearest Morrisons store by postcode or use your current location.';
+
+  
   return (
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+      </Helmet>
+
+
     <div className="search-container">
       <div className="search_section">
         <header className="heading">
@@ -406,6 +429,7 @@ export const SearchFeature: React.FC<SearchFeatureProps> = ({
         )}
       </div>
     </div>
+    </>
   );
 };
 

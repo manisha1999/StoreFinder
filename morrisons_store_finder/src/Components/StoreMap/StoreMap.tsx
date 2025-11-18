@@ -248,7 +248,8 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center }) => {
     return () => {
       newMarkers.forEach(marker => marker.setMap(null));
     };
-  }, [map, stores, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map,stores, navigate]);
 
   // Loading state
   if (!(window as any).google?.maps) {

@@ -83,9 +83,9 @@ function useFocusTrap<T extends HTMLElement>(rootRef: React.RefObject<T | null>)
   }, [rootRef]);
 }
 
-function normalizeFilter(s: string) {
-  return String(s || "").trim();
-}
+// function normalizeFilter(s: string) {
+//   return String(s || "").trim();
+// }
 
 function Section({
   title,
@@ -182,9 +182,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ appliedFilters, onChange, onC
     [appliedFilters, onChange]
   );
 
-  const clearAll = useCallback(() => {
-    onChange([]);
-  }, [onChange]);
+  // const clearAll = useCallback(() => {
+  //   onChange([]);
+  // }, [onChange]);
 
   return (
     <div

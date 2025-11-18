@@ -18,6 +18,7 @@
 
 /* Backdrop */
 .modal-backdrop {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: fixed;
   z-index: 999;
   left: 0; top: 0; width: 100vw; height: 100vh;

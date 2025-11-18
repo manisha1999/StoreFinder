@@ -1,7 +1,8 @@
 .filter-bar {
-  background: #eef2f1;
+  background: white;
   border-radius: 6px;
   padding: 0.5em 2em 2em 2em;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .filter-header {

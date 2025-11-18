@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import useStoreDetails from '../../Hooks/useStoreDetails';
 import { storeCache } from '../StoreCache/StoreCache';
@@ -128,11 +129,14 @@ const generateSlug = (storeName: string): string => {
 
 export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
   const navigate = useNavigate();
-  const { details, fetchDetails } = useStoreDetails();
-
+  // const { details, fetchDetails } = useStoreDetails();
+const { fetchDetails } = useStoreDetails();
   // Favorite state
   const storeId = String(store.name);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  // Meta active when user focuses / hovers the card
+  const [metaActive, setMetaActive] = useState(false);
 
   // Check if favorite on mount and listen for changes
   useEffect(() => {
@@ -192,7 +196,23 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
     }
   };
 
+ const metaTitle = store.storeName ? `${store.storeName} — Morrisons Store` : 'Morrisons Store';
+  const metaDescription = `${addressText} • ${storeStatus.displayText}`;
+
+
+
   return (
+    <>
+     {metaActive && (
+        <Helmet>
+          <title>{metaTitle}</title>
+          <meta name="description" content={metaDescription} />
+          <meta property="og:title" content={metaTitle} />
+          <meta property="og:description" content={metaDescription} />
+          <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/'} />
+        </Helmet>
+      )}
+
     <li 
       className="store-card"
       onClick={handleCardClick}
@@ -201,6 +221,10 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
       role="button"
       aria-label={`Open details for ${store.storeName}`}
       aria-describedby={addressId}
+       onMouseEnter={() => setMetaActive(true)}
+        onMouseLeave={() => setMetaActive(false)}
+        onFocus={() => setMetaActive(true)}
+        onBlur={() => setMetaActive(false)}
     >
       <div className="store-card-header">
         <h3 className="store-name">{store.storeName}</h3>
@@ -234,6 +258,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
         </p>
       </div>
     </li>
+    </>
   );
 };
 

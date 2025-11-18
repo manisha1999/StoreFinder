@@ -4,19 +4,20 @@
 :root {
   --morrisons-green: #008033;
   --morrisons-yellow: #fabb00;
-  --nav-bg: #ffffff;
+  --nav-bg: #fafafa;
+  --tw-bg-opacity: 1;
   --nav-border: #ececec;
   --text: lightgray;
   --accent: #005a1f;
   --nav-height-desktop: 56px;
   --nav-height-mobile: 48px;
   --gap-desktop: 18px;
-  --z-nav: 1100;
+  --z-nav: 1400;
 }
 
 /* Top-level navbar */
 .morrisons-navbar {
-  background: var(--nav-bg);
+  background: var(--nav-bg)/var(--tw-bg-opacity);
   border-bottom: 1px solid var(--nav-border);
   width: 100%;
   position: sticky;
