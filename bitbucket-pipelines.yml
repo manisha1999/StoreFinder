@@ -17,7 +17,7 @@ pipelines:
             - npm install --silent --no-audit --no-optional
             # avoid CRA treating warnings as errors in CI
             - CI=false npm run build
-            - npx playwright install
+            - npx playwright install-deps
             - npx playwright test
           artifacts:
             - morrisons_store_finder/build/**
