@@ -18,6 +18,7 @@ pipelines:
             # avoid CRA treating warnings as errors in CI
             - CI=false npm run build
             - npx playwright install-deps
+            - npx playwright install
             - npx playwright test
           artifacts:
             - morrisons_store_finder/build/**
