@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE = 'http://localhost:3000';
+const BASE = 'https://morrisonsstorefinder.vercel.app/';
 const FAVORITES_KEY = 'morrisons_favorites';
 
 test.describe('Morrisons Store Finder - E2E', () => {
