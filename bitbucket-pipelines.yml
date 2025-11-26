@@ -17,6 +17,7 @@ pipelines:
             - npm install --silent --no-audit --no-optional
             # avoid CRA treating warnings as errors in CI
             - CI=false npm run build
+            - npm run test
           artifacts:
             - morrisons_store_finder/build/**
       - step:
