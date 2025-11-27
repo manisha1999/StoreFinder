@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE = 'https://morrisonsstorefinder.vercel.app/';
+const BASE = 'http://127.0.0.1:3000';
 const FAVORITES_KEY = 'morrisons_favorites';
 
 test.describe('Morrisons Store Finder - E2E', () => {
@@ -324,7 +324,5 @@ test('map fallback: when Google Maps missing the map-placeholder / fallback UI i
     await page.waitForURL('**/storefinder/**', { timeout: 10000 });
     await expect(page).toHaveURL(/\/storefinder\/[^/]+/);
   });
-
-
 
 });
