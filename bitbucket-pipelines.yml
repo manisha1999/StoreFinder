@@ -8,7 +8,7 @@ pipelines:
   branches:
     main:
       - step:
-          name: Build (subfolder)
+          name: Build & Test
           caches:
             - npm
           script:
@@ -17,9 +17,20 @@ pipelines:
             - npm install --silent --no-audit --no-optional
             # avoid CRA treating warnings as errors in CI
             - CI=false npm run build
-
+            # Install Playwright system dependencies and browsers
+            - npx playwright install-deps
+            - npx playwright install
+            # Serve the built app on port 3000 in background
+            - npx http-server build -p 3000 -c-1 &
+            # Wait for server to be ready
+            - npx wait-on http://localhost:3000 --timeout 30000
+            # Run all Playwright tests from test.spec.ts
+            - npx playwright test --config=playwright.config.ts
           artifacts:
             - morrisons_store_finder/build/**
+            - morrisons_store_finder/playwright-report/**
+            - morrisons_store_finder/test-results/**
+
       - step:
           name: Deploy to Vercel
           deployment: production
@@ -41,5 +52,16 @@ pipelines:
             - cd morrisons_store_finder
             - npm install --silent --no-audit --no-optional
             - CI=false npm run build
+            # Install Playwright for manual deployment
+            - npx playwright install-deps
+            - npx playwright install
+            # Serve and test before manual deployment
+            - npx http-server build -p 3000 -c-1 &
+            - npx wait-on http://localhost:3000 --timeout 30000
+            - npx playwright test --config=playwright.config.ts
+            # Deploy after tests pass
             - npx --yes vercel --version
             - npx --yes vercel --token $VERCEL_TOKEN --prod --confirm
+          artifacts:
+            - morrisons_store_finder/playwright-report/**
+            - morrisons_store_finder/test-results/**
