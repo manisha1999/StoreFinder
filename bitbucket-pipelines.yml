@@ -23,7 +23,7 @@ pipelines:
             # Serve the built app on port 3000 in background
             - npx http-server build -p 3000 -c-1 &
             # Wait for server to be ready
-            - npx wait-on http://localhost:3000 --timeout 30000
+            - npx wait-on http://127.0.0.1:3000 --timeout 30000
             # Run all Playwright tests from test.spec.ts
             - npx playwright test --config=playwright.config.ts
           artifacts:
