@@ -1,4 +1,4 @@
-image: node:18
+image: node:20  # Changed from node:18
 
 definitions:
   caches:
@@ -45,7 +45,7 @@ pipelines:
     deploy-vercel:
       - step:
           name: Deploy (manual) to Vercel
-          image: node:18
+          image: node:20  # Changed from node:18
           caches:
             - npm
           script:
