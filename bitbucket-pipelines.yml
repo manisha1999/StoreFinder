@@ -57,7 +57,7 @@ pipelines:
             - npx playwright install
             # Serve and test before manual deployment
             - npx http-server build -p 3000 -c-1 &
-            - npx wait-on http://localhost:3000 --timeout 30000
+            - npx wait-on http://127.0.0.1:3000 --timeout 30000
             - npx playwright test --config=playwright.config.ts
             # Deploy after tests pass
             - npx --yes vercel --version
