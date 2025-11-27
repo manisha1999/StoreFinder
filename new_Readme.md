@@ -43,13 +43,11 @@ This file explains what I built, design and implementation decisions, where to l
 
 ## Environment / CI variables
 - `VERCEL_TOKEN` — for deploy step (set in CI)
-- `SITE_URL` — used by Lighthouse audit step
-- API base URL (if using a remote API) should be provided via `.env` / `REACT_APP_API_BASE_URL` (do not commit secrets)
+
 
 ## Known limitations / TODOs
 - Some optional native packages were avoided in CI (`npm install --no-optional`) to prevent kernel/module calls on hosted runners.
 - If using React 19, some third‑party libs may still declare peer deps for React <= 18; I used `react-helmet` (sync) to avoid `react-helmet-async` peer issues.
-- Lighthouse target scores require production optimisations (image compression, server headers). CI includes an audit step but production tuning may be needed to reach ≥90.
 
 # Steps to run and check
 1. Start app: `npm start`
