@@ -20,9 +20,9 @@ pipelines:
             # Install Playwright system dependencies and browsers
             - npx playwright install-deps
             - npx playwright install
-            # Serve the built app on port 3000 in background
-            - npx http-server build -p 3000 -c-1 &
-            # Wait for server to be ready
+            # Serve the built app on 0.0.0.0:3000 (bind to all interfaces)
+            - npx http-server build -p 3000 -a 0.0.0.0 -c-1 --silent &
+            # Wait for server using 127.0.0.1 instead of localhost
             - npx wait-on http://127.0.0.1:3000 --timeout 30000
             # Run all Playwright tests from test.spec.ts
             - npx playwright test --config=playwright.config.ts
@@ -56,7 +56,7 @@ pipelines:
             - npx playwright install-deps
             - npx playwright install
             # Serve and test before manual deployment
-            - npx http-server build -p 3000 -c-1 &
+            - npx http-server build -p 3000 -a 0.0.0.0 -c-1 --silent &
             - npx wait-on http://127.0.0.1:3000 --timeout 30000
             - npx playwright test --config=playwright.config.ts
             # Deploy after tests pass
