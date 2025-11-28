@@ -107,7 +107,6 @@ test.describe('Morrisons Store Finder - E2E', () => {
       await expect(page.locator('.services-list')).toContainText(/no services available/i);
     }
 
-
   });
 
   test('shows validation error for too-short input', async ({ page }) => {
@@ -158,7 +157,6 @@ test.describe('Morrisons Store Finder - E2E', () => {
     await expect(page.locator('.store-card')).toHaveCount(0);
   });
 
-  // ...existing code...
   test('current-location permission denied shows fallback / permission error', async ({ page }) => {
     // Inject a script to make navigator.geolocation report "permission denied"
     await page.addInitScript(() => {
@@ -324,5 +322,6 @@ test('map fallback: when Google Maps missing the map-placeholder / fallback UI i
     await page.waitForURL('**/storefinder/**', { timeout: 10000 });
     await expect(page).toHaveURL(/\/storefinder\/[^/]+/);
   });
+
 
 });
