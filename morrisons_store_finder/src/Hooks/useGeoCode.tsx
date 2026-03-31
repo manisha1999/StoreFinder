@@ -28,8 +28,8 @@ export function useGeocode() {
         setLoading(true);
         setError(null);
 
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(postcode)}&key=${GOOGLE_MAPS_API_KEY}&components=country:GB`;
-
+        // With this line (use your backend proxy endpoint, no API key in frontend):
+        const url = `/api/geocode?postcode=${encodeURIComponent(postcode)}`;
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Geocoding API failed with status: ${response.status}`);

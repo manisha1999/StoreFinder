@@ -41,7 +41,8 @@ const API_KEY = process.env.REACT_APP_MORRISONS_API_KEY;
 
 // Fetch stores from API
 async function fetchStoresByCoordinates({ lat, lon }: Coordinates): Promise<Store[]> {
-    const url = `${API_URL}?apikey=${API_KEY}&distance=50000&lat=${lat}&limit=10&lon=${lon}&offset=0&storeformat=supermarket&include=departments,services,linkedStores`;
+    // const url = `${API_URL}?apikey=${API_KEY}&distance=50000&lat=${lat}&limit=10&lon=${lon}&offset=0&storeformat=supermarket&include=departments,services,linkedStores`;
+    const url = `/api/morrisons?distance=50000&lat=${lat}&limit=10&lon=${lon}&offset=0&storeformat=supermarket&include=departments,services,linkedStores`;
     
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Failed to fetch stores: ${response.status}`);
@@ -96,7 +97,7 @@ export function useStoreSearch() {
     // Handle geocode errors
     useEffect(() => {
         if (geocodeError && isProcessingPostcode.current) {
-            console.error('❌ Geocode error:', geocodeError);
+            
             setError(geocodeError);
             setStores([]);
             setLoading(false);
