@@ -36,8 +36,8 @@ export interface Store {
     distance: number;
 }
 
-const API_URL = "https://uat-api.morrisons.com/location/v2/stores";
-const API_KEY = process.env.REACT_APP_MORRISONS_API_KEY;
+// const API_URL = "https://uat-api.morrisons.com/location/v2/stores";
+// const API_KEY = process.env.REACT_APP_MORRISONS_API_KEY;
 
 // Fetch stores from API
 async function fetchStoresByCoordinates({ lat, lon }: Coordinates): Promise<Store[]> {
