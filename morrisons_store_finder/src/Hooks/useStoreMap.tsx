@@ -26,13 +26,12 @@ interface UseStoresMapReturn {
 // Utility function for building URL
 const buildStoresMapUrl = (latitude: number, longitude: number, radius: number = 10): string => {
   const params = new URLSearchParams({
-    apikey: MORRISONS_API_KEY,
     latitude: latitude.toString(),
     longitude: longitude.toString(),
     radius: radius.toString(),
   });
-  
-  return `${API_BASE_URL}?${params.toString()}`;
+  // Use proxy endpoint (no API key in frontend)
+  return `/api/morrisons/map?${params.toString()}`;
 };
 
 export function useStoresMap(): UseStoresMapReturn {

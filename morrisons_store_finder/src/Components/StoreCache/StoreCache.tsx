@@ -16,7 +16,6 @@ export const storeCache = {
       timestamp: Date.now(),
     };
     try {
-
       localStorage.setItem(`${CACHE_KEY_PREFIX}${storeId}`, JSON.stringify(cached));
       console.log("Cached store data:", cached);
     } catch (error) {

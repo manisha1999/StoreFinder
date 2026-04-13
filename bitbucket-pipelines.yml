@@ -1,4 +1,4 @@
-image: node:18
+image: node:20
 
 definitions:
   caches:
@@ -8,37 +8,55 @@ pipelines:
   branches:
     main:
       - step:
-          name: Build (subfolder)
+          name: Build & Test
           caches:
             - npm
           script:
             - cd morrisons_store_finder
-            # install deps without optional native modules that may require kernel access
             - npm install --silent --no-audit --no-optional
-            # avoid CRA treating warnings as errors in CI
             - CI=false npm run build
+            # Install Playwright system dependencies and browsers
+            - npx playwright install-deps
+            - npx playwright install
+            # Serve the built app on 0.0.0.0:3000 (bind to all interfaces)
+            - npx http-server build -p 3000 -a 0.0.0.0 -c-1 --silent &
+            # Wait for server using 127.0.0.1 instead of localhost
+            - npx wait-on http://127.0.0.1:3000 --timeout 30000
+            # Run all Playwright tests from test.spec.ts
+            - CI=true npx playwright test --config=playwright.config.ts
           artifacts:
             - morrisons_store_finder/build/**
+            - morrisons_store_finder/playwright-report/**
+            - morrisons_store_finder/test-results/**
+
       - step:
           name: Deploy to Vercel
           deployment: production
           script:
             - cd morrisons_store_finder
-            # use npx to run vercel CLI without global install
             - npx --yes vercel --version
-            # deploy to Vercel; requires VERCEL_TOKEN (set in repo variables)
+            # Deploy only if tests passed in previous step
             - npx --yes vercel --token $VERCEL_TOKEN --prod --confirm
           
   custom:
     deploy-vercel:
       - step:
           name: Deploy (manual) to Vercel
-          image: node:18
+          image: node:20
           caches:
             - npm
           script:
             - cd morrisons_store_finder
             - npm install --silent --no-audit --no-optional
             - CI=false npm run build
+            - npx playwright install-deps
+            - npx playwright install
+            - npx http-server build -p 3000 -a 0.0.0.0 -c-1 --silent &
+            - npx wait-on http://127.0.0.1:3000 --timeout 30000
+            - CI=true npx playwright test --config=playwright.config.ts
+            # Deploy after tests pass
             - npx --yes vercel --version
             - npx --yes vercel --token $VERCEL_TOKEN --prod --confirm
+          artifacts:
+            - morrisons_store_finder/playwright-report/**
+            - morrisons_store_finder/test-results/**

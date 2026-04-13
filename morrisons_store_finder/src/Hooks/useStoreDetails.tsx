@@ -1,9 +1,9 @@
 import { useCallback, useState, useRef } from "react";
 import { storeCache } from '../Components/StoreCache/StoreCache';
 
-// Constants
-const MORRISONS_API_KEY = process.env.REACT_APP_MORRISONS_API_KEY || 'APIKEY';
-const API_BASE_URL = 'https://uat-api.morrisons.com/location/v2/stores';
+// Remove API key and direct API URL from frontend
+// const MORRISONS_API_KEY = process.env.REACT_APP_MORRISONS_API_KEY || 'APIKEY';
+// const API_BASE_URL = 'https://uat-api.morrisons.com/location/v2/stores';
 const INCLUDE_PARAMS = 'departments,services,linkedStores';
 
 // Types
@@ -29,10 +29,11 @@ interface UseStoreDetailsReturn {
   isFromCache: boolean;
 }
 
-// Utility function for building URL
+// Utility function for building proxy URL
 const buildStoreDetailsUrl = (storeId: string | number): string => {
-  const url = `${API_BASE_URL}/${encodeURIComponent(String(storeId))}?apikey=${encodeURIComponent(MORRISONS_API_KEY)}&include=${INCLUDE_PARAMS}`;
-  console.log('🌐 Building URL:', url);
+  // Use proxy endpoint; API key is handled by backend
+  const url = `/api/morrisons/${encodeURIComponent(String(storeId))}?include=${INCLUDE_PARAMS}`;
+  console.log('🌐 Building proxy URL:', url);
   return url;
 };
 
@@ -61,7 +62,6 @@ export function useStoreDetails(): UseStoreDetailsReturn {
 
     try {
       // ✅ Step 1: Check cache first
-      // const cached = storeCache.get(storeIdString);
       const cached = localStorage.getItem(`store_cache_${storeIdString}`) ? JSON.parse(localStorage.getItem(`store_cache_${storeIdString}`) || '') : null;
       if (cached) {
         console.log('✅ Cache HIT for', storeIdString);
@@ -76,7 +76,7 @@ export function useStoreDetails(): UseStoreDetailsReturn {
         console.log('❌ Cache MISS for', storeIdString);
       }
 
-      // ✅ Step 2: No cache, fetch from API
+      // ✅ Step 2: No cache, fetch from API (via proxy)
       console.log('📡 Fetching from API...');
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
@@ -150,16 +150,12 @@ export function useStoreDetails(): UseStoreDetailsReturn {
 
   console.log('useStoreDetails state:', { details, loading, error, isFromCache });
   return { 
-
-   
     details, 
     loading, 
     error, 
     fetchDetails,
     clearDetails,
     isFromCache
-
-
   };
 }
 

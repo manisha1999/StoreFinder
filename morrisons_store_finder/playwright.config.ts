@@ -27,6 +27,9 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
+     baseURL: process.env.CI === 'true' 
+      ? 'http://127.0.0.1:3000'  // Use 127.0.0.1 in CI (Bitbucket pipeline)
+      : 'http://localhost:3000',  // Use localhost for local dev
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

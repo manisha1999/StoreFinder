@@ -55,8 +55,6 @@ function Home() {
     : 'Search for your nearest Morrisons store by postcode or use your current location. Find opening times, services and more.';
 
 
-
-
   return (
     <>
      <Helmet>
