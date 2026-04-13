@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, deploy ]
   pull_request:
     branches: [ main ]
 
@@ -25,43 +25,41 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Use workspace folder
-        run: echo "Starting in morrisons_store_finder"
-        working-directory: morrisons_store_finder
-
       - name: Install dependencies
-        working-directory: morrisons_store_finder
         run: npm ci
+        working-directory: morrisons_store_finder
 
       - name: Build frontend
-        working-directory: morrisons_store_finder
         run: npm run build
+        working-directory: morrisons_store_finder
 
       - name: Install Playwright browsers
-        working-directory: morrisons_store_finder
         run: npx playwright install --with-deps
+        working-directory: morrisons_store_finder
 
       - name: Start backend (server.js)
-        working-directory: morrisons_store_finder
         run: |
           nohup node server.js > server.log 2>&1 &
-          echo "Backend started"
-      
-      - name: Serve frontend build
+          echo "Backend started on port ${PORT}"
         working-directory: morrisons_store_finder
+
+      - name: Serve frontend build
         run: |
           npx http-server build -p 3000 -a 0.0.0.0 -c-1 > http-server.log 2>&1 &
-          echo "Frontend build served"
-
-      - name: Wait for services
+          echo "Frontend build served on port 3000"
         working-directory: morrisons_store_finder
-        run: npx wait-on http://127.0.0.1:3000 http://127.0.0.1:3001 --timeout 30000
+
+      - name: Wait for services (frontend + backend)
+        run: |
+          sleep 2
+          npx wait-on http://127.0.0.1:3000 http://127.0.0.1:3001 --timeout 60000
+        working-directory: morrisons_store_finder
 
       - name: Run Playwright tests
-        working-directory: morrisons_store_finder
         env:
           CI: true
         run: npx playwright test --config=playwright.config.ts --reporter=list
+        working-directory: morrisons_store_finder
 
       - name: Upload Playwright HTML report
         if: always()
@@ -71,7 +69,7 @@ jobs:
           path: morrisons_store_finder/playwright-report
 
       - name: Upload server logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: server-logs
@@ -82,7 +80,7 @@ jobs:
   deploy-vercel:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.VERCEL_TOKEN != ''
+    if: github.ref == 'refs/heads/deploy' && secrets.VERCEL_TOKEN != ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -96,7 +94,6 @@ jobs:
         run: npm install -g vercel
 
       - name: Deploy to Vercel (production)
-        working-directory: morrisons_store_finder
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
