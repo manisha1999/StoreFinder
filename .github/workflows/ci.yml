@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      PORT: 3001
+      # secrets to be configured in GitHub repository settings
+      MORRISONS_API_KEY: ${{ secrets.MORRISONS_API_KEY }}
+      REACT_APP_GOOGLE_MAPS_API_KEY: ${{ secrets.REACT_APP_GOOGLE_MAPS_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Use workspace folder
+        run: echo "Starting in morrisons_store_finder"
+        working-directory: morrisons_store_finder
+
+      - name: Install dependencies
+        working-directory: morrisons_store_finder
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: morrisons_store_finder
+        run: npm run build
+
+      - name: Install Playwright browsers
+        working-directory: morrisons_store_finder
+        run: npx playwright install --with-deps
+
+      - name: Start backend (server.js)
+        working-directory: morrisons_store_finder
+        run: |
+          nohup node server.js > server.log 2>&1 &
+          echo "Backend started"
+      
+      - name: Serve frontend build
+        working-directory: morrisons_store_finder
+        run: |
+          npx http-server build -p 3000 -a 0.0.0.0 -c-1 > http-server.log 2>&1 &
+          echo "Frontend build served"
+
+      - name: Wait for services
+        working-directory: morrisons_store_finder
+        run: npx wait-on http://127.0.0.1:3000 http://127.0.0.1:3001 --timeout 30000
+
+      - name: Run Playwright tests
+        working-directory: morrisons_store_finder
+        env:
+          CI: true
+        run: npx playwright test --config=playwright.config.ts --reporter=list
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: morrisons_store_finder/playwright-report
+
+      - name: Upload server logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            morrisons_store_finder/server.log
+            morrisons_store_finder/http-server.log
+
+  deploy-vercel:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && secrets.VERCEL_TOKEN != ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel (production)
+        working-directory: morrisons_store_finder
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel --prod --confirm --token $VERCEL_TOKEN
