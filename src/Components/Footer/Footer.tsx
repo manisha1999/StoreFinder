@@ -187,7 +187,6 @@ const Footer: React.FC = () => {
                     panelRefs.current[index] = el;
                   }}
                   className={`footer-panel ${expanded ? "expanded" : "collapsed"}`}
-                  role="list"
                   aria-hidden={!expanded}
                 >
                   {section.links.map((link, idx) => (
