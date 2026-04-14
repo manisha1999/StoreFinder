@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -82,7 +80,6 @@ jobs:
   deploy-vercel:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.VERCEL_TOKEN != ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
